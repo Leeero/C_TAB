@@ -1,0 +1,46 @@
+.popup-container {
+  width: 320px;
+  padding: 16px;
+}
+
+.site-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.site-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.site-info h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.form-item {
+  margin-bottom: 16px;
+}
+
+.form-item label {
+  display: block;
+  margin-bottom: 4px;
+  color: #666;
+  font-size: 12px;
+}
+
+/* 深色模式支持 */
+@media (prefers-color-scheme: dark) {
+  .popup-container {
+    background: #1f1f1f;
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  .form-item label {
+    color: rgba(255, 255, 255, 0.45);
+  }
+} 

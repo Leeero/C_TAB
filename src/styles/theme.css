@@ -1,0 +1,42 @@
+/* Ant Design 组件主题覆盖 */
+.ant-modal-content {
+  padding: var(--spacing-lg);
+  border-radius: var(--border-radius-xl);
+  box-shadow: var(--shadow-lg);
+  background: var(--component-background);
+}
+
+.ant-dropdown-menu {
+  padding: var(--spacing-xs);
+  border-radius: var(--border-radius-md);
+  background: var(--component-background);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-md);
+}
+
+.ant-input-affix-wrapper {
+  border-radius: var(--border-radius-lg);
+  border-color: var(--border-color);
+  background: var(--component-background);
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: var(--border-radius-sm);
+}
+
+@media (prefers-color-scheme: dark) {
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+  }
+} 

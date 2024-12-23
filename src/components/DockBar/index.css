@@ -1,0 +1,98 @@
+.dock-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding: 8px;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.dock-content {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 16px;
+  padding: 8px;
+  display: flex;
+  gap: 8px;
+  pointer-events: auto;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+}
+
+.dock-item {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+}
+
+.dock-icon {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
+.dock-icon-fallback {
+  font-size: 20px;
+  color: #8c8c8c;
+}
+
+.dock-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* 深色模式支持 */
+@media (prefers-color-scheme: dark) {
+  .dock-content {
+    background: rgba(0, 0, 0, 0.8);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .dock-item {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .dock-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .dock-icon-fallback {
+    color: rgba(255, 255, 255, 0.45);
+  }
+}
+
+/* 响应式布局 */
+@media (max-width: 768px) {
+  .dock-bar {
+    padding: 4px;
+  }
+
+  .dock-content {
+    padding: 6px;
+    gap: 6px;
+  }
+
+  .dock-item {
+    width: 40px;
+    height: 40px;
+  }
+
+  .dock-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .dock-icon-fallback {
+    font-size: 16px;
+  }
+} 

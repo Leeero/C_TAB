@@ -1,0 +1,292 @@
+{
+  "navConfig": [
+    {
+      "id": "nav_jidxR8DZ-VfQ__TbFzA196416",
+      "name": "软件",
+      "icon": "xin",
+      "children": [
+        {
+          "url": "https://www.youtube.com/",
+          "type": "icon",
+          "name": "YouTube",
+          "src": "https://files.codelife.cc/icons/youtube.svg",
+          "backgroundColor": "#ff0000",
+          "id": "E9vjg7TCr3U_NCeFkfSXq0427",
+          "size": "2x2",
+          "view": 3
+        },
+        {
+          "id": "q1Ec1Q6fXf2Cc_5OxR6rX3579",
+          "url": "https://console.cloud.tencent.com/",
+          "name": "腾讯云",
+          "src": "https://files.codelife.cc/website/5ad5ba6717fa1105a20faf89.png",
+          "type": "icon",
+          "iconText": "函数列",
+          "size": "2x2",
+          "view": 7
+        },
+        {
+          "id": "M4RLbm7wI2sMLt_oGVyAT2524",
+          "url": "https://hk.fxthk.cn/agent/index",
+          "name": "流量卡",
+          "src": "",
+          "type": "text",
+          "iconText": "流量卡",
+          "backgroundColor": "#a3ddb9",
+          "size": "2x2",
+          "view": 34
+        },
+        {
+          "id": "JJkzrtqdUspYH7kXpUBSR9976",
+          "url": "http://www.1000qm.vip/",
+          "name": "阡陌居",
+          "src": "http://www.1000qm.vip/favicon.ico",
+          "type": "icon",
+          "iconText": "\ufffd\ufffdİ",
+          "backgroundColor": "#2ecc71",
+          "size": "1x1",
+          "view": 52
+        },
+        {
+          "id": "cLrqyCn9qiDvodE7CySJH7237",
+          "url": "https://xclient.info/s/",
+          "name": "Mac 应用分享",
+          "src": "https://files.codelife.cc/icons/60b9ec16ae5a9ba4024b3d72.png",
+          "type": "icon",
+          "iconText": "Mac",
+          "backgroundColor": "#373f49",
+          "view": 8,
+          "size": "1x1"
+        },
+        {
+          "url": "https://www.xiaozhongjishu.com/?from=itab",
+          "type": "icon",
+          "name": "小众技术资源库",
+          "src": "https://files.codelife.cc/icons/xiaozhongjishu.com.png",
+          "backgroundColor": "",
+          "id": "Vbh4EsPUmwlJNofmTkcVC1235",
+          "view": 3,
+          "size": "1x1"
+        },
+        {
+          "url": "http://docs.qq.com",
+          "type": "icon",
+          "name": "腾讯文档",
+          "src": "https://files.codelife.cc/icons/docs-qq.svg",
+          "backgroundColor": "#fff",
+          "id": "zaXB3k03hO0E6eepuHtqR2094",
+          "size": "1x1",
+          "view": 1
+        },
+        {
+          "name": "渐变色",
+          "component": "webGradients",
+          "backgroundColor": "#fff",
+          "type": "icon",
+          "insetType": "iframe",
+          "src": "https://files.codelife.cc/tools-icon/webGradients.svg",
+          "size": "1x1",
+          "id": "UU_pd3YLbWNM6v7sjeRML4855",
+          "view": 1
+        },
+        {
+          "name": "头像生成",
+          "component": "colorAvatar",
+          "type": "icon",
+          "backgroundColor": "#6bd9e9",
+          "insetType": "iframe",
+          "src": "https://files.codelife.cc/tools-icon/colorAvatar.png",
+          "size": "1x1",
+          "id": "efCAobvclK9RErE6LBSD-6818",
+          "view": 2
+        },
+        {
+          "id": "G6qdBSiv4cpljYTJUaudp9806",
+          "url": "itab://add",
+          "type": "icon",
+          "name": "添加图标",
+          "src": "https://files.codelife.cc/icons/add.svg",
+          "backgroundColor": "#fff",
+          "view": 10
+        },
+        {
+          "id": "BhzR2vqQk0275X1phi11D7865",
+          "url": "https://www.typingclub.com/sportal/program-3.game",
+          "name": "打字练习",
+          "src": "https://files.codelife.cc/icons/60b9ed73ae5a9ba4024b41cf.png",
+          "type": "icon",
+          "iconText": "Lea",
+          "backgroundColor": "#28aae1",
+          "size": "1x1"
+        },
+        {
+          "url": "https://www.xiaohongshu.com/explore?m_source=itab",
+          "type": "icon",
+          "name": "小红书",
+          "src": "https://files.codelife.cc/icons/xiaohongshu.svg",
+          "backgroundColor": "#ff2442",
+          "id": "9g6OYsW5vZr2C73J8sZ6f3223",
+          "view": 37
+        },
+        {
+          "url": "https://union-click.jd.com/jdc?e=618|pc|&p=JF8BAKAJK1olXDYDZBoCUBVIMzZNXhpXVhgcDBsJVFRMVnBaRQcLbW4CLCIobAh_Yz9YWDlvR31ySg4PdB0bD18NG1oUWgYKUV5bOEsWAm4KHFoUWwcyZF5cOAB5Al8KGloQXQMAUVdeOEsRA2kIGV8VWg4DUVptD0seMyZdRh9JBVYyZF9tC3sQA2YcHSlUDxIEJm5tCXsXM18KGloRVDYyZG5t",
+          "type": "icon",
+          "name": "京东商城",
+          "src": "https://files.codelife.cc/icons/jd.svg",
+          "backgroundColor": "#ff0000",
+          "id": "ujHql6FiNRYipp9uyYgTk1916",
+          "iconText": "京东商",
+          "view": 1
+        },
+        {
+          "id": "l7GeaKA6FePlP-l6SfgGa6567",
+          "url": "https://excalidraw.com/",
+          "name": "白板",
+          "src": "https://excalidraw.com/apple-touch-icon.png",
+          "type": "icon",
+          "iconText": "Exc",
+          "backgroundColor": "#0071c0",
+          "size": "1x1"
+        },
+        {
+          "id": "V-9Ul8IH2dq7XhFcRlExT6235",
+          "url": "https://console.cloud.tencent.com/",
+          "name": "腾讯云",
+          "src": "https://files.codelife.cc/website/5ad5ba6717fa1105a20faf89.png",
+          "type": "icon",
+          "iconText": "函数列",
+          "view": 1
+        },
+        {
+          "id": "ssr2dc6_G4__uQksITC7u4671",
+          "url": "https://www.86hk.vip/admin/goods/index?ref=addtabs",
+          "name": "号易号卡",
+          "src": "https://www.86hk.vip/public/assets/img/favicon.ico",
+          "type": "icon",
+          "iconText": "号易",
+          "backgroundColor": "#13ae67",
+          "view": 5
+        },
+        {
+          "url": "https://www.bilibili.com/",
+          "type": "icon",
+          "name": "哔哩哔哩",
+          "src": "https://files.codelife.cc/icons/bilibili2.svg",
+          "backgroundColor": "#ff5ca1",
+          "id": "WLj-uq7gfL_9ZncjWI37r4679",
+          "size": "1x2",
+          "view": 41
+        },
+        {
+          "type": "text",
+          "id": "P5_s7VbyM7Sfe2U_Zh3gE8496",
+          "url": "https://sms-activate.org/cn/buy",
+          "name": "接码平台",
+          "src": "",
+          "iconText": "接码平台",
+          "backgroundColor": "#a3ddb9",
+          "view": 7
+        },
+        {
+          "type": "icon",
+          "id": "-S14kk4bk1EPur4QAchdx5133",
+          "url": "https://box-shadow.dev/",
+          "name": "自动生成阴影",
+          "src": "https://box-shadow.dev/favicon.svg",
+          "iconText": "自动生成阴影"
+        },
+        {
+          "type": "icon",
+          "id": "uCkXGEJX_515CcprU84qu4297",
+          "url": "https://huaban.com/search?q=九宫格抽奖",
+          "name": "设计素材",
+          "src": "https://files.codelife.cc/icons/huaban.svg",
+          "iconText": "设计素材",
+          "backgroundColor": "#ea2936"
+        },
+        {
+          "type": "icon",
+          "id": "Itk2mIgG8IPcvnfIEYYb93384",
+          "url": "https://www.yingdao.com/",
+          "name": "按键精灵",
+          "src": "https://winrobot-pub-a-oss.winrobot360.com/static/home/favicon.ico",
+          "iconText": "按键精灵"
+        },
+        {
+          "type": "icon",
+          "id": "x6f2nLF1wYD8CL4NR89I77045",
+          "url": "https://meta.appinn.net/t/topic/48365",
+          "name": "“免费、免登录、免回复的各种资源网站",
+          "src": "https://meta-cdn1.appinn.com/uploads/default/optimized/3X/3/f/3f1cdb070a45c819ee707f060e4aab9875b43442_2_32x32.png",
+          "iconText": "免费",
+          "view": 2
+        },
+        {
+          "url": "https://www.douyin.com/?ug_source=pc_liangxiang_01",
+          "type": "icon",
+          "name": "抖音",
+          "src": "https://files.codelife.cc/icons/douyin.svg",
+          "backgroundColor": "#1c0b1a",
+          "id": "zTqAv4gA73e_8wbQr2-wD8861",
+          "view": 1
+        },
+        {
+          "type": "icon",
+          "id": "CIL8Bg5-NcCGQUPr2NzeC7056",
+          "url": "https://tieba.baidu.com/index.html",
+          "name": "百度贴吧——全球领先的中文社区",
+          "src": "https://files.codelife.cc/icons/tieba.svg",
+          "iconText": "贴吧",
+          "backgroundColor": "#306cff",
+          "view": 3
+        },
+        {
+          "type": "icon",
+          "id": "09mrLSnUH7AJnwdRkTT2a6377",
+          "url": "https://dynv6.com/",
+          "name": "免费域名",
+          "src": "https://dynv6.com/favicon.ico",
+          "iconText": "免费域名",
+          "view": 1
+        },
+        {
+          "type": "icon",
+          "id": "O_y07NQphV6yC5NBLRMxv6003",
+          "url": "https://dash.cloudflare.com/ae1919e19885e3fff16aa15b60037f9a",
+          "name": "cloudflare",
+          "src": "https://files.codelife.cc/website/604ad9938af9860fb41a9dde.png",
+          "iconText": "cloudf",
+          "view": 3
+        },
+        {
+          "type": "icon",
+          "id": "u05JsSFl7ecn3_7dfAkx91132",
+          "url": "https://md.btlm.one/",
+          "name": "BT联盟",
+          "src": "https://md.btlm.one/favicon.png",
+          "iconText": "BT联盟"
+        },
+        {
+          "type": "icon",
+          "id": "Irrp4GU1Rtoe_TRFl09Cy8696",
+          "url": "https://tempmail100.com/",
+          "name": "临时邮箱",
+          "src": "https://tempmail100.com/assets/image/favicon.png",
+          "iconText": "临时邮箱",
+          "view": 5
+        },
+        {
+          "type": "icon",
+          "id": "vjZsRrfnn4CAoj1Z2_RtR9702",
+          "url": "http://panel.lero.fun:15658",
+          "name": "1Panel",
+          "src": "http://panel.lero.fun:15658/public/favicon.png",
+          "iconText": "",
+          "backgroundColor": "#2ecc71",
+          "size": "1x2",
+          "view": 15
+        }
+      ]
+    },
+  ]
+}

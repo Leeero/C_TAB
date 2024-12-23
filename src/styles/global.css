@@ -1,0 +1,91 @@
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Modal 样式优化 */
+.ant-modal {
+  padding-bottom: 0;
+}
+
+.ant-modal-content {
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+.ant-modal-header {
+  margin-bottom: 24px;
+}
+
+.ant-modal-title {
+  font-weight: 500;
+  font-size: 1.125rem;
+}
+
+.ant-modal-close {
+  top: 24px;
+  right: 24px;
+}
+
+/* Dropdown 菜单样式 */
+.ant-dropdown-menu {
+  padding: 4px;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.ant-dropdown-menu-item {
+  border-radius: 4px;
+  padding: 8px 12px;
+}
+
+/* 深色模式支持 */
+@media (prefers-color-scheme: dark) {
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  .ant-modal-content {
+    background: #1f1f1f;
+  }
+
+  .ant-modal-title {
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  .ant-dropdown-menu {
+    background: #1f1f1f;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* 响应式布局 */
+@media (max-width: 768px) {
+  .ant-modal {
+    max-width: calc(100vw - 32px);
+    margin: 16px;
+  }
+
+  .ant-modal-content {
+    padding: 16px;
+  }
+} 

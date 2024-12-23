@@ -1,0 +1,28 @@
+.popup-container {
+  width: 350px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+}
+
+.popup-container h2 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  letter-spacing: -0.022em;
+}
+
+.save-form {
+  margin-top: 16px;
+}
+
+.new-category-form {
+  margin-bottom: 16px;
+}
+
+/* 深色模式支持 */
+@media (prefers-color-scheme: dark) {
+  .popup-container {
+    background: rgba(28, 28, 30, 0.95);
+  }
+} 

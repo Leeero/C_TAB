@@ -1,0 +1,62 @@
+:root {
+  /* Colors */
+  --primary-color: #1890ff;
+  --primary-color-hover: #40a9ff;
+  --primary-color-active: #096dd9;
+  --text-color: #1f1f1f;
+  --text-color-secondary: #8c8c8c;
+  --border-color: rgba(0, 0, 0, 0.06);
+  --background-color: #f0f2f5;
+  --component-background: #fff;
+  
+  /* Layout */
+  --header-height: 64px;
+  --sidebar-width: 80px;
+  --content-max-width: 1200px;
+  --dock-height: 68px;
+  
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 2px 20px rgba(0, 0, 0, 0.15);
+  
+  /* Border Radius */
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 12px;
+  --border-radius-xl: 16px;
+  
+  /* Z-index */
+  --z-base: 1;
+  --z-dock: 1000;
+  --z-dropdown: 1050;
+  --z-modal: 1100;
+}
+
+/* Dark theme variables */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text-color: rgba(255, 255, 255, 0.85);
+    --text-color-secondary: rgba(255, 255, 255, 0.45);
+    --border-color: rgba(255, 255, 255, 0.1);
+    --background-color: #141414;
+    --component-background: rgba(0, 0, 0, 0.85);
+  }
+}
+
+/* Mobile variables */
+@media (max-width: 768px) {
+  :root {
+    --spacing-lg: 16px;
+    --spacing-md: 12px;
+    --spacing-sm: 8px;
+    --spacing-xs: 4px;
+  }
+} 
