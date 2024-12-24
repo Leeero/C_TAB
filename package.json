@@ -11,7 +11,8 @@
     "dev:extension": "vite build --watch",
     "dev:watch": "npm run copy-files && tsx scripts/dev.ts",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "build:zip": "tsx scripts/build-zip.ts"
   },
   "dependencies": {
     "react": "^18.3.1",
@@ -31,6 +32,7 @@
     "tsx": "^4.19.2",
     "typescript": "~5.6.2",
     "typescript-eslint": "^8.18.1",
-    "vite": "^6.0.3"
+    "vite": "^6.0.3",
+    "archiver": "^5.3.1"
   }
 }

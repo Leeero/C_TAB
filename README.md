@@ -71,4 +71,19 @@ npm run build
 4. 点击"加载已解压的扩展程序"
 5. 选择项目的 `dist` 目录
 
+## 安装方法
+
+### 方法一：从 Release 安装
+1. 访问 [Releases 页面](https://github.com/你的用户名/c-tab/releases)
+2. 下载最新版本的 `c-tab.zip`
+3. 打开 Chrome 浏览器，访问 `chrome://extensions/`
+4. 开启"开发者模式"
+5. 将下载的 zip 文件拖入浏览器窗口，或者解压后通过"加载已解压的扩展程序"加载
+
+### 方法二：从源码构建
+1. 克隆仓库
+2. 运行 `npm install`
+3. 运行 `npm run build`
+4. 加载 `dist` 目录
+
 
