@@ -12,14 +12,18 @@
     "dev:watch": "npm run copy-files && tsx scripts/dev.ts",
     "lint": "eslint .",
     "preview": "vite preview",
-    "build:zip": "tsx scripts/build-zip.ts"
+    "build:zip": "tsx scripts/build-zip.ts",
+    "test:build": "tsx scripts/test-build.ts"
   },
   "dependencies": {
+    "antd": "^5.14.1",
+    "archiver": "^7.0.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
+    "@types/archiver": "^5.3.4",
     "@types/chrome": "^0.0.287",
     "@types/node": "^22.10.2",
     "@types/react": "^18.3.17",
@@ -32,7 +36,6 @@
     "tsx": "^4.19.2",
     "typescript": "~5.6.2",
     "typescript-eslint": "^8.18.1",
-    "vite": "^6.0.3",
-    "archiver": "^5.3.1"
+    "vite": "^6.0.3"
   }
 }

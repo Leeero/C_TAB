@@ -21,10 +21,12 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: |
+          npm install
+          npm install antd@latest
 
       - name: Build extension
-        run: npm run build
+        run: npm run build:extension
 
       - name: Create ZIP file
         run: |
