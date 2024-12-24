@@ -1,0 +1,23 @@
+.icon-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.icon-name {
+  font-size: 12px;
+  color: #666;
+}
+
+.ant-select-dropdown .ant-select-item-option-content {
+  display: flex;
+  align-items: center;
+}
+
+/* 深色模式支持 */
+@media (prefers-color-scheme: dark) {
+  .icon-name {
+    color: rgba(255, 255, 255, 0.65);
+  }
+} 

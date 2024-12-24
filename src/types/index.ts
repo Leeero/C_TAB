@@ -3,6 +3,7 @@ export interface Category {
   name: string
   icon: string
   isHome?: boolean
+  color?: string
 }
 
 export interface SavedLink {

@@ -1,0 +1,25 @@
+.icon-color-row {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+}
+
+.icon-color-row .ant-form-item {
+  flex: 1;
+}
+
+.ant-form-item-label {
+  padding-bottom: 4px;
+}
+
+.ant-form-item-label > label {
+  font-size: 14px;
+  color: #1f1f1f;
+}
+
+/* 深色模式支持 */
+@media (prefers-color-scheme: dark) {
+  .ant-form-item-label > label {
+    color: rgba(255, 255, 255, 0.85);
+  }
+} 

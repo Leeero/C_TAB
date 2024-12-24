@@ -1,3 +1,10 @@
+/*
+ * @Author       : leroli
+ * @Date         : 2024-12-23 18:34:29
+ * @LastEditors  : leroli
+ * @LastEditTime : 2024-12-24 14:42:35
+ * @Description  : 
+ */
 import React from 'react'
 import { Dropdown } from 'antd'
 import { PlusOutlined, SettingOutlined } from '@ant-design/icons'
@@ -34,7 +41,13 @@ const CategoryDock: React.FC<CategoryDockProps> = ({
                 onClick={() => onSelectCategory(category.id)}
                 title={category.name}
               >
-                <div className="category-icon">
+                <div 
+                  className="category-icon"
+                  style={category.color ? {
+                    background: category.color,
+                    boxShadow: `0 2px 8px ${category.color}40`
+                  } : undefined}
+                >
                   {renderIcon(category.icon)}
                 </div>
                 <div className="category-name">{category.name}</div>
