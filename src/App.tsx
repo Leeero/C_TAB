@@ -17,6 +17,8 @@ import {
   Select,
   Button,
   Form,
+  Space,
+  Upload,
 } from "antd";
 import {
   EditOutlined,
@@ -44,6 +46,8 @@ import {
   loadCategories,
   loadSettings,
   saveSettings,
+  exportData,
+  importData,
 } from "./utils/storage";
 
 const { Content } = Layout;
@@ -470,6 +474,62 @@ function App() {
     }
   };
 
+  // 添加导入导出相关函数
+  const handleExportData = async () => {
+    try {
+      const data = await exportData()
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `c-tab-backup-${new Date().toISOString().split('T')[0]}.json`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+      messageApi.success('导出成功')
+    } catch (error) {
+      console.error('Export error:', error)
+      messageApi.error('导出失败')
+    }
+  }
+
+  const handleImportData = async (file: File) => {
+    try {
+      const text = await file.text()
+      const data = JSON.parse(text)
+      await importData(data)
+      
+      // 重新加载数据
+      const [loadedCategories, loadedLinks, settings] = await Promise.all([
+        loadCategories(),
+        loadLinks(),
+        loadSettings()
+      ])
+
+      // 确保有数据再设置状态
+      if (loadedCategories.length > 0) {
+        setCategories(loadedCategories)
+        setSelectedCategoryId(loadedCategories[0].id)
+      }
+      
+      if (loadedLinks) {
+        setSavedLinks(loadedLinks)
+      }
+
+      if (settings) {
+        setSelectedSearchEngine(settings.searchEngine || 'google')
+        setBackgroundColor(settings.backgroundColor || '#f0f2f5')
+        setBackgroundImageUrl(settings.backgroundImageUrl || '')
+      }
+
+      messageApi.success('导入成功')
+    } catch (error) {
+      console.error('Import error:', error)
+      messageApi.error('导入失败：' + (error as Error).message)
+    }
+  }
+
   return (
     <div
       className="app-layout"
@@ -670,6 +730,28 @@ function App() {
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+
+        <div className="settings-section">
+          <h3>数据管理</h3>
+          <Space>
+            <Button onClick={handleExportData}>
+              导出数据
+            </Button>
+            <Upload
+              accept=".json"
+              showUploadList={false}
+              beforeUpload={(file) => {
+                handleImportData(file)
+                return false
+              }}
+            >
+              <Button>导入数据</Button>
+            </Upload>
+          </Space>
+          <div className="settings-tip">
+            导出的数据包含所有分类、链接和设置信息
           </div>
         </div>
       </Modal>
