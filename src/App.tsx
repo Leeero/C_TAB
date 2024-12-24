@@ -2,12 +2,12 @@
  * @Author       : leroli
  * @Date         : 2024-12-23 11:12:53
  * @LastEditors  : leroli
- * @LastEditTime : 2024-12-23 19:42:40
+ * @LastEditTime : 2024-12-24 12:20:20
  * @Description  : 
  */
 import React, { useState, useEffect } from 'react'
-import { Layout, Modal, message, Input, Radio, Upload, Button, Row, Col, Menu } from 'antd'
-import { EditOutlined, DeleteOutlined, StarOutlined, StarFilled, UploadOutlined, PlusOutlined, ColumnHeightOutlined } from '@ant-design/icons'
+import { Layout, Modal, message, Input, Radio, Row, Col, Select, Button } from 'antd'
+import { EditOutlined, DeleteOutlined, StarOutlined, StarFilled, PlusOutlined, PictureOutlined } from '@ant-design/icons'
 import SearchBox from './components/SearchBox'
 import CategoryDock from './components/CategoryDock'
 import LinkCard from './components/LinkCard'
@@ -15,9 +15,9 @@ import DockBar from './components/DockBar'
 import { Category, SavedLink } from './types'
 import { getMatchingIcon } from './utils/iconUtils'
 import './App.css'
-import { RcFile } from 'antd/es/upload'
 import { getSearchUrl } from './config/searchEngines'
 import styles from './App.css?inline'
+import { getBingImages } from './utils/bingImages'
 
 const { Content } = Layout
 
@@ -42,6 +42,11 @@ function App() {
   const [isAddLinkModalVisible, setIsAddLinkModalVisible] = useState(false)
   const [newLinkTitle, setNewLinkTitle] = useState('')
   const [newLinkUrl, setNewLinkUrl] = useState('')
+  const [editLinkCategory, setEditLinkCategory] = useState<string>('')
+  const [backgroundImageUrl, setBackgroundImageUrl] = useState<string>('')
+  const [backgroundColor, setBackgroundColor] = useState<string>('#f0f2f5')
+  const [bingImages, setBingImages] = useState<BingImage[]>([])
+  const [loadingImages, setLoadingImages] = useState(false)
 
   // 加载数据
   useEffect(() => {
@@ -83,6 +88,24 @@ function App() {
       }
     }
     loadSettings()
+  }, [])
+
+  // 修改加载背景图片的 useEffect
+  useEffect(() => {
+    const loadBackground = async () => {
+      try {
+        const result = await chrome.storage.sync.get(['backgroundImageUrl', 'backgroundColor'])
+        if (result.backgroundImageUrl) {
+          setBackgroundImageUrl(result.backgroundImageUrl)
+        }
+        if (result.backgroundColor) {
+          setBackgroundColor(result.backgroundColor)
+        }
+      } catch (error) {
+        console.error('加载背景设置失败:', error)
+      }
+    }
+    loadBackground()
   }, [])
 
   // 搜索处理
@@ -210,17 +233,16 @@ function App() {
     setEditingLink(link)
     setEditLinkTitle(link.title)
     setEditLinkUrl(link.url)
+    setEditLinkCategory(link.categoryId)
     setIsEditLinkModalVisible(true)
   }
 
-  // 处理保存链接
+  // 保存编辑的链接
   const handleSaveLink = async () => {
-    if (!editLinkTitle.trim() || !editLinkUrl.trim()) {
+    if (!editingLink || !editLinkTitle.trim() || !editLinkUrl.trim()) {
       messageApi.error('请填写完整信息')
       return
     }
-
-    if (!editingLink) return
 
     try {
       const updatedLinks = savedLinks.map(link =>
@@ -229,6 +251,7 @@ function App() {
               ...link,
               title: editLinkTitle.trim(),
               url: editLinkUrl.trim(),
+              categoryId: editLinkCategory,
               timestamp: Date.now()
             }
           : link
@@ -237,10 +260,10 @@ function App() {
       await chrome.storage.sync.set({ savedLinks: updatedLinks })
       setSavedLinks(updatedLinks)
       setIsEditLinkModalVisible(false)
-      messageApi.success('保存成功')
+      messageApi.success('修改成功')
     } catch (error) {
-      console.error('Save link error:', error)
-      messageApi.error('保存失败')
+      console.error('Edit link error:', error)
+      messageApi.error('修改失败')
     }
   }
 
@@ -254,64 +277,6 @@ function App() {
     } catch (error) {
       console.error('Delete link error:', error)
       messageApi.error('删除失败')
-    }
-  }
-
-  // 处理导入数据
-  const handleImport = async (file: RcFile) => {
-    const maxCategories = 50
-    const maxLinks = 1000
-
-    try {
-      const content = await file.text()
-      const data = JSON.parse(content)
-
-      if (!data.categories || !data.links) {
-        throw new Error('Invalid data format')
-      }
-
-      const newCategories = data.categories.filter((cat: Category) =>
-        !categories.find(c => c.id === cat.id)
-      )
-
-      const newLinks = data.links.filter((link: SavedLink) =>
-        !savedLinks.find(l => l.id === link.id)
-      )
-
-      if (categories.length + newCategories.length > maxCategories) {
-        messageApi.error(`分类数量超出限制 (最大 ${maxCategories} 个)`)
-        return
-      }
-
-      if (savedLinks.length + newLinks.length > maxLinks) {
-        messageApi.error(`链接数量超出限制 (最大 ${maxLinks} 个)`)
-        return
-      }
-
-      const trimmedCategories = [...categories, ...newCategories].slice(0, maxCategories)
-
-      messageApi.loading('正在导入数据...', 0)
-      
-      try {
-        await chrome.storage.sync.set({
-          categories: trimmedCategories,
-          savedLinks: [...savedLinks, ...newLinks]
-        })
-
-        setCategories(trimmedCategories)
-        setSavedLinks([...savedLinks, ...newLinks])
-        messageApi.success(`导入成功：${newCategories.length} 个分类，${newLinks.length} 个链接`)
-        setIsSettingsVisible(false)
-      } catch (error) {
-        console.error('Save error:', error)
-        messageApi.error('导入失败：数据量超出限制')
-      } finally {
-        messageApi.destroy()
-      }
-
-    } catch (error) {
-      console.error('Import error:', error)
-      messageApi.error('导入失败，请检查文件格式')
     }
   }
 
@@ -369,6 +334,7 @@ function App() {
           if (response.ok) {
             return faviconUrl
           }
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
           continue
         }
@@ -400,6 +366,7 @@ function App() {
           const html = await response.text()
           const doc = new DOMParser().parseFromString(html, 'text/html')
           title = doc.title || newUrl
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (error) {
           title = newUrl
         }
@@ -416,7 +383,6 @@ function App() {
         timestamp: Date.now(),
         isDocked: false,
         icon,
-        size: { cols: 1, rows: 1 } // 添加默认大小
       }
 
       const updatedLinks = [...savedLinks, newLink]
@@ -431,8 +397,59 @@ function App() {
     }
   }
 
+  // 修改选择图片的函数
+  const handleSelectBingImage = async (imageUrl: string) => {
+    try {
+      await chrome.storage.sync.set({ backgroundImageUrl: imageUrl })
+      setBackgroundImageUrl(imageUrl)
+      messageApi.success('背景图片设置成功')
+    } catch (error) {
+      console.error('设置背景图片失败:', error)
+      messageApi.error('设置背景图片失败')
+    }
+  }
+
+  // 修改选择纯色背景的函数
+  const handleSelectColor = async (color: string) => {
+    try {
+      await chrome.storage.sync.set({ 
+        backgroundImageUrl: '',  // 清除背景图
+        backgroundColor: color   // 设置背景色
+      })
+      setBackgroundImageUrl('')
+      setBackgroundColor(color)
+      messageApi.success('背景颜色设置成功')
+    } catch (error) {
+      console.error('设置背景颜色失败:', error)
+      messageApi.error('设置背景颜色失败')
+    }
+  }
+
+  // 添加加载 Bing 图片的函数
+  const loadBingImages = async () => {
+    try {
+      setLoadingImages(true)
+      const images = await getBingImages()
+      setBingImages(images)
+    } catch (error) {
+      messageApi.error('获取 Bing 图片失败')
+    } finally {
+      setLoadingImages(false)
+    }
+  }
+
   return (
-    <div className="app-layout">
+    <div 
+      className="app-layout"
+      style={backgroundImageUrl ? {
+        backgroundImage: `url(${backgroundImageUrl})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat'
+      } : {
+        backgroundColor
+      }}
+    >
       <style>{styles}</style>
       {contextHolder}
       
@@ -456,9 +473,6 @@ function App() {
         <div className="content-scroll">
           {selectedCategoryId && (
             <div className="category-section slide-up">
-              <div className="category-header">
-                <h2>{categories.find(c => c.id === selectedCategoryId)?.name}</h2>
-              </div>
               <Row gutter={[16, 16]} className="links-grid">
                 {(groupedLinks[selectedCategoryId] || []).map((link, index) => (
                   <Col key={link.id}>
@@ -487,8 +501,7 @@ function App() {
           )}
         </div>
       </Content>
-
-      <DockBar links={dockedLinks} />
+      {dockedLinks.length > 0 && <DockBar links={dockedLinks} />}
 
       {/* 添加分类 Modal */}
       <Modal
@@ -517,12 +530,26 @@ function App() {
             value={editLinkTitle}
             onChange={e => setEditLinkTitle(e.target.value)}
             style={{ marginBottom: 16 }}
+            maxLength={50}
           />
           <Input
             placeholder="链接地址"
             value={editLinkUrl}
             onChange={e => setEditLinkUrl(e.target.value)}
+            style={{ marginBottom: 16 }}
           />
+          <Select
+            style={{ width: '100%' }}
+            value={editLinkCategory}
+            onChange={setEditLinkCategory}
+            placeholder="选择分类"
+          >
+            {categories.map(category => (
+              <Select.Option key={category.id} value={category.id}>
+                {category.name}
+              </Select.Option>
+            ))}
+          </Select>
         </div>
       </Modal>
 
@@ -532,6 +559,8 @@ function App() {
         open={isSettingsVisible}
         onOk={handleSaveSettings}
         onCancel={() => setIsSettingsVisible(false)}
+        cancelText="取消"
+        okText="保存"
       >
         <div className="settings-section">
           <h3>默认搜索引擎</h3>
@@ -546,21 +575,62 @@ function App() {
         </div>
 
         <div className="settings-section">
-          <h3>数据导入</h3>
-          <Upload
-            accept=".json"
-            showUploadList={false}
-            beforeUpload={(file) => {
-              handleImport(file)
-              return false
-            }}
-          >
-            <Button icon={<UploadOutlined />}>
-              选择文件导入
-            </Button>
-          </Upload>
-          <div className="import-tip">
-            支持导入 iTab 数据
+          <h3>背景设置</h3>
+          <div className="background-preview">
+            {backgroundImageUrl ? (
+              <div className="current-background">
+                <img src={backgroundImageUrl} alt="当前背景" />
+              </div>
+            ) : (
+              <div 
+                className="current-background solid-background"
+                style={{ backgroundColor }}
+              />
+            )}
+            <div className="background-actions">
+              <Button 
+                icon={<PictureOutlined />}
+                onClick={loadBingImages}
+                loading={loadingImages}
+              >
+                选择 Bing 图片
+              </Button>
+              <div className="color-presets">
+                {[
+                  '#f0f2f5',  // 默认浅灰
+                  '#ffffff',  // 纯白
+                  '#141414',  // 深色
+                  '#e6f4ff',  // 浅蓝
+                  '#f6ffed',  // 浅绿
+                  '#fff7e6',  // 浅橙
+                  '#fff1f0',  // 浅红
+                  '#f9f0ff'   // 浅紫
+                ].map(color => (
+                  <div
+                    key={color}
+                    className={`color-preset ${backgroundColor === color ? 'active' : ''}`}
+                    style={{ backgroundColor: color }}
+                    onClick={() => handleSelectColor(color)}
+                    title={color}
+                  />
+                ))}
+              </div>
+            </div>
+            <div className="bing-images">
+              {bingImages.map((image, index) => (
+                <div 
+                  key={index} 
+                  className="bing-image-item"
+                  onClick={() => handleSelectBingImage(image.url)}
+                >
+                  <img src={image.thumbnailUrl} alt={image.title} />
+                  <div className="image-info">
+                    <div className="image-title">{image.title}</div>
+                    <div className="image-copyright">{image.copyright}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </Modal>
@@ -575,6 +645,8 @@ function App() {
           setRenamingCategory(null)
           setNewName('')
         }}
+        cancelText="取消"
+        okText="保存"
       >
         <Input
           placeholder="分类名称"
@@ -589,6 +661,8 @@ function App() {
         title="新增链接"
         open={isAddLinkModalVisible}
         onOk={handleAddLink}
+        cancelText="取消"
+        okText="保存"
         onCancel={() => {
           setIsAddLinkModalVisible(false)
           setNewLinkTitle('')

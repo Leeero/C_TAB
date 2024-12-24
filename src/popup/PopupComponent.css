@@ -33,6 +33,38 @@
   font-size: 12px;
 }
 
+.icon-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.site-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  border-radius: 6px;
+  padding: 2px;
+  background: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.icon-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.icon-actions .ant-btn {
+  padding: 0 4px;
+  height: 20px;
+  font-size: 12px;
+}
+
+.icon-actions .anticon {
+  font-size: 12px;
+}
+
 /* 深色模式支持 */
 @media (prefers-color-scheme: dark) {
   .popup-container {
@@ -42,5 +74,9 @@
 
   .form-item label {
     color: rgba(255, 255, 255, 0.45);
+  }
+
+  .site-icon {
+    background: rgba(255, 255, 255, 0.1);
   }
 } 

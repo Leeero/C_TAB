@@ -62,7 +62,14 @@
 
 /* 编辑表单样式 */
 .edit-link-form {
-  padding: 8px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.edit-link-form .ant-input,
+.edit-link-form .ant-select {
+  width: 100%;
 }
 
 /* 深色模式支持 */
@@ -129,5 +136,142 @@
 @media (max-width: 576px) {
   .links-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* 背景图片预览 */
+.background-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.current-background {
+  position: relative;
+  width: 100%;
+  height: 160px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.current-background img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.current-background .ant-btn {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  background: rgba(0, 0, 0, 0.6);
+  border: none;
+  color: white;
+}
+
+.current-background .ant-btn:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
+
+.upload-tip {
+  color: #8c8c8c;
+  font-size: 12px;
+}
+
+/* 深色模式支持 */
+@media (prefers-color-scheme: dark) {
+  .upload-tip {
+    color: rgba(255, 255, 255, 0.45);
+  }
+}
+
+.background-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.bing-images {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.bing-image-item {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.bing-image-item:hover {
+  transform: scale(1.02);
+}
+
+.bing-image-item img {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+}
+
+.image-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+}
+
+.image-title {
+  font-size: 12px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.image-copyright {
+  font-size: 10px;
+  opacity: 0.8;
+}
+
+/* 纯色背景预览 */
+.solid-background {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* 颜色预设 */
+.color-presets {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.color-preset {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+
+.color-preset:hover {
+  transform: scale(1.1);
+}
+
+.color-preset.active {
+  box-shadow: 0 0 0 2px #1890ff;
+}
+
+/* 深色模式支持 */
+@media (prefers-color-scheme: dark) {
+  .solid-background {
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .color-preset {
+    border-color: rgba(255, 255, 255, 0.1);
   }
 }

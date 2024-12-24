@@ -9,26 +9,16 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { ConfigProvider, message } from 'antd'
 import PopupComponent from './PopupComponent'
+import { Category } from '../types'
+import { getMatchingIcon } from '../utils/iconUtils'
 import 'antd/dist/reset.css'
 
 const Popup = () => {
-  const handleSave = async (title: string, url: string, icon: string) => {
+  const handleSave = async (title: string, url: string, icon: string, categoryId: string) => {
     try {
       // 获取当前存储的数据
-      const result = await chrome.storage.sync.get(['savedLinks', 'categories'])
+      const result = await chrome.storage.sync.get(['savedLinks'])
       const savedLinks = result.savedLinks || []
-      const categories = result.categories || []
-
-      // 如果没有分类，创建默认分类
-      if (categories.length === 0) {
-        const homeCategory = {
-          id: 'home',
-          name: '首页',
-          icon: 'HomeOutlined',
-          isHome: true
-        }
-        await chrome.storage.sync.set({ categories: [homeCategory] })
-      }
 
       // 创建新链接
       const newLink = {
@@ -36,7 +26,7 @@ const Popup = () => {
         title: title.trim(),
         url: url.trim(),
         icon,
-        categoryId: categories[0]?.id || 'home',
+        categoryId,
         timestamp: Date.now(),
         isDocked: false
       }
@@ -54,9 +44,35 @@ const Popup = () => {
     }
   }
 
+  const handleAddCategory = async (name: string): Promise<Category> => {
+    try {
+      const result = await chrome.storage.sync.get(['categories'])
+      const categories = result.categories || []
+
+      const newCategory: Category = {
+        id: Date.now().toString(),
+        name: name.trim(),
+        icon: getMatchingIcon(name),
+        isHome: false
+      }
+
+      await chrome.storage.sync.set({
+        categories: [...categories, newCategory]
+      })
+
+      return newCategory
+    } catch (error) {
+      console.error('添加分类失败:', error)
+      throw error
+    }
+  }
+
   return (
     <ConfigProvider>
-      <PopupComponent onSave={handleSave} />
+      <PopupComponent 
+        onSave={handleSave}
+        onAddCategory={handleAddCategory}
+      />
     </ConfigProvider>
   )
 }
