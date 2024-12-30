@@ -2,7 +2,7 @@
  * @Author       : leroli
  * @Date         : 2024-12-23 11:12:53
  * @LastEditors  : leroli
- * @LastEditTime : 2024-12-24 16:34:30
+ * @LastEditTime : 2024-12-30 19:23:19
  * @Description  : 首页
  */
 import React, { useState, useEffect } from "react";
@@ -19,6 +19,7 @@ import {
   Form,
   Space,
   Upload,
+  Switch,
 } from "antd";
 import {
   EditOutlined,
@@ -81,6 +82,7 @@ function App() {
   const [loadingImages, setLoadingImages] = useState(false);
   const [form] = Form.useForm();
   const [editForm] = Form.useForm();
+  const [openInNewTab, setOpenInNewTab] = useState(true);
 
   // 加载数据
   useEffect(() => {
@@ -120,6 +122,7 @@ function App() {
       setSelectedSearchEngine(settings.searchEngine);
       setBackgroundColor(settings.backgroundColor);
       setBackgroundImageUrl(settings.backgroundImageUrl);
+      setOpenInNewTab(settings.openInNewTab);
     };
     loadAppSettings();
   }, []);
@@ -315,8 +318,11 @@ function App() {
 
   // 添加保存设置函数
   const handleSaveSettings = async () => {
-    await saveSettings({ searchEngine: selectedSearchEngine });
-    messageApi.success("设置保存成功");
+    await saveSettings({ 
+      searchEngine: selectedSearchEngine,
+      openInNewTab
+    });
+    messageApi.success('设置保存成功');
     setIsSettingsVisible(false);
   };
 
@@ -573,8 +579,10 @@ function App() {
                 {(groupedLinks[selectedCategoryId] || []).map((link, index) => (
                   <Col key={link.id}>
                     <LinkCard
+                      key={link.id}
                       link={link}
                       menuItems={getLinkMenuItems(link)}
+                      openInNewTab={openInNewTab}
                       className={`fade-in delay-${(index % 3) + 1}`}
                     />
                   </Col>
@@ -669,6 +677,16 @@ function App() {
             <Radio.Button value="baidu">百度</Radio.Button>
             <Radio.Button value="bing">Bing</Radio.Button>
           </Radio.Group>
+        </div>
+
+        <div className="settings-section">
+          <h3>页面打开方式</h3>
+          <Switch
+            checked={openInNewTab}
+            onChange={setOpenInNewTab}
+            checkedChildren="新标签页打开"
+            unCheckedChildren="当前页打开"
+          />
         </div>
 
         <div className="settings-section">

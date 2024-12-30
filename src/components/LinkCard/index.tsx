@@ -16,13 +16,19 @@ interface LinkCardProps {
   link: SavedLink
   menuItems: any[]
   className?: string
+  openInNewTab: boolean
 }
 
-const LinkCard: React.FC<LinkCardProps> = ({ link, menuItems, className }) => {
+const LinkCard: React.FC<LinkCardProps> = ({ link, menuItems, className, openInNewTab }) => {
   return (
     <Dropdown menu={{ items: menuItems }} trigger={['contextMenu']}>
       <div className={`link-card ${className || ''}`}>
-        <a href={link.url} className="link-content" target="_blank" rel="noopener noreferrer">
+        <a 
+          href={link.url} 
+          className="link-content" 
+          target={openInNewTab ? "_blank" : "_self"}
+          rel={openInNewTab ? "noopener noreferrer" : ""}
+        >
           <div className="link-icon">
             {link.icon ? (
               <img src={link.icon} alt="" className="favicon" />

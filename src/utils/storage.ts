@@ -99,7 +99,8 @@ export const loadCategories = async (): Promise<Category[]> => {
 export const saveSettings = async (settings: { 
   searchEngine?: string,
   backgroundColor?: string,
-  backgroundImageUrl?: string
+  backgroundImageUrl?: string,
+  openInNewTab?: boolean
 }) => {
   await chrome.storage.sync.set(settings)
 }
@@ -109,12 +110,14 @@ export const loadSettings = async () => {
   const result = await chrome.storage.sync.get([
     'searchEngine',
     'backgroundColor',
-    'backgroundImageUrl'
+    'backgroundImageUrl',
+    'openInNewTab'
   ])
   return {
     searchEngine: result.searchEngine || 'google',
     backgroundColor: result.backgroundColor || '#f0f2f5',
-    backgroundImageUrl: result.backgroundImageUrl || ''
+    backgroundImageUrl: result.backgroundImageUrl || '',
+    openInNewTab: result.openInNewTab ?? true
   }
 }
 
