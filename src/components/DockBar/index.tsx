@@ -2,7 +2,7 @@
  * @Author       : leroli
  * @Date         : 2024-12-23 18:34:47
  * @LastEditors  : leroli
- * @LastEditTime : 2024-12-23 19:59:34
+ * @LastEditTime : 2024-12-31 16:18:18
  * @Description  : 
  */
 import React from 'react'
@@ -13,9 +13,10 @@ import './index.css'
 
 interface DockBarProps {
   links: SavedLink[]
+  openInNewTab: boolean
 }
 
-const DockBar: React.FC<DockBarProps> = ({ links }) => {
+const DockBar: React.FC<DockBarProps> = ({ links, openInNewTab }) => {
   return (
     <div className="dock-bar">
       <div className="dock-content">
@@ -24,8 +25,8 @@ const DockBar: React.FC<DockBarProps> = ({ links }) => {
             <a
               href={link.url}
               className="dock-item"
-              target="_blank"
-              rel="noopener noreferrer"
+              target={openInNewTab ? "_blank" : "_self"}
+              rel={openInNewTab ? "noopener noreferrer" : ""}
             >
               {link.icon ? (
                 <img src={link.icon} alt="" className="dock-icon" />

@@ -2,7 +2,7 @@
  * @Author       : leroli
  * @Date         : 2024-12-23 11:12:53
  * @LastEditors  : leroli
- * @LastEditTime : 2024-12-30 19:23:19
+ * @LastEditTime : 2024-12-31 16:20:04
  * @Description  : 首页
  */
 import React, { useState, useEffect } from "react";
@@ -607,7 +607,7 @@ function App() {
           )}
         </div>
       </Content>
-      {dockedLinks.length > 0 && <DockBar links={dockedLinks} />}
+      {dockedLinks.length > 0 && <DockBar openInNewTab={openInNewTab} links={dockedLinks} />}
 
       {/* 添加分类 Modal */}
       <Modal
