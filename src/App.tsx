@@ -83,6 +83,9 @@ function App() {
   const [form] = Form.useForm();
   const [editForm] = Form.useForm();
   const [openInNewTab, setOpenInNewTab] = useState(true);
+  const [draggingLinkId, setDraggingLinkId] = useState<string | null>(null);
+  const [dragOverLinkId, setDragOverLinkId] = useState<string | null>(null);
+  const [justDroppedLinkId, setJustDroppedLinkId] = useState<string | null>(null);
 
   // 加载数据
   useEffect(() => {
@@ -232,16 +235,70 @@ function App() {
     setSavedLinks(updatedLinks);
   };
 
-  // 链接分组
+  // 链接分组（按 order 排序）
   const groupedLinks = React.useMemo(() => {
-    return savedLinks.reduce((acc, link) => {
+    const groups = savedLinks.reduce((acc, link) => {
       if (!acc[link.categoryId]) {
         acc[link.categoryId] = [];
       }
       acc[link.categoryId].push(link);
       return acc;
     }, {} as { [key: string]: SavedLink[] });
+
+    // 每个分类内部按 order 排序
+    Object.keys(groups).forEach((categoryId) => {
+      groups[categoryId].sort((a, b) => {
+        const orderA = a.order ?? Number.MAX_SAFE_INTEGER;
+        const orderB = b.order ?? Number.MAX_SAFE_INTEGER;
+        return orderA - orderB;
+      });
+    });
+
+    return groups;
   }, [savedLinks]);
+
+  // 处理拖拽排序（当前分类内移动链接顺序）
+  const handleReorderLinksInCategory = async (
+    sourceId: string,
+    targetId: string,
+    categoryId: string
+  ) => {
+    if (!sourceId || !targetId || sourceId === targetId) return;
+
+    const categoryLinks = savedLinks.filter(
+      (link) => link.categoryId === categoryId
+    );
+
+    const sourceIndex = categoryLinks.findIndex((link) => link.id === sourceId);
+    const targetIndex = categoryLinks.findIndex((link) => link.id === targetId);
+
+    if (sourceIndex === -1 || targetIndex === -1) return;
+
+    const reorderedCategoryLinks = [...categoryLinks];
+    const [moved] = reorderedCategoryLinks.splice(sourceIndex, 1);
+    reorderedCategoryLinks.splice(targetIndex, 0, moved);
+
+    const updatedLinks = savedLinks.map((link) => {
+      if (link.categoryId !== categoryId) return link;
+      const indexInCategory = reorderedCategoryLinks.findIndex(
+        (item) => item.id === link.id
+      );
+      if (indexInCategory === -1) return link;
+      return {
+        ...link,
+        order: indexInCategory,
+      };
+    });
+
+    await saveLinks(updatedLinks);
+    setSavedLinks(updatedLinks);
+
+    // 触发落地动画
+    setJustDroppedLinkId(sourceId);
+    setTimeout(() => setJustDroppedLinkId(null), 400);
+
+    messageApi.success("排序已保存");
+  };
 
   // 处理添加分类
   const handleAddCategory = async (values: {
@@ -577,13 +634,43 @@ function App() {
             <div className="category-section slide-up">
               <Row gutter={[16, 16]} className="links-grid">
                 {(groupedLinks[selectedCategoryId] || []).map((link, index) => (
-                  <Col key={link.id}>
+                  <Col key={link.id}
+                    onDragOver={(event) => {
+                      event.preventDefault();
+                      if (draggingLinkId && draggingLinkId !== link.id) {
+                        setDragOverLinkId(link.id);
+                      }
+                    }}
+                    onDragLeave={() => {
+                      setDragOverLinkId(null);
+                    }}
+                    onDrop={(event) => {
+                      event.preventDefault();
+                      setDragOverLinkId(null);
+                      if (!draggingLinkId) return;
+                      handleReorderLinksInCategory(
+                        draggingLinkId,
+                        link.id,
+                        selectedCategoryId
+                      );
+                      setDraggingLinkId(null);
+                    }}
+                  >
                     <LinkCard
                       key={link.id}
                       link={link}
                       menuItems={getLinkMenuItems(link)}
                       openInNewTab={openInNewTab}
                       className={`fade-in delay-${(index % 3) + 1}`}
+                      draggable
+                      isDragging={draggingLinkId === link.id}
+                      isDragOver={dragOverLinkId === link.id}
+                      isJustDropped={justDroppedLinkId === link.id}
+                      onDragStart={() => setDraggingLinkId(link.id)}
+                      onDragEnd={() => {
+                        setDraggingLinkId(null);
+                        setDragOverLinkId(null);
+                      }}
                     />
                   </Col>
                 ))}

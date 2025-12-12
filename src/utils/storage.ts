@@ -12,6 +12,7 @@ const compressLink = (link: SavedLink): Partial<SavedLink> => ({
   categoryId: link.categoryId,
   isDocked: link.isDocked,
   icon: link.icon,
+  order: link.order,
   // 不存储 timestamp，在加载时重新生成
 })
 
@@ -24,7 +25,8 @@ const decompressLink = (link: Partial<SavedLink>): SavedLink => ({
   categoryId: link.categoryId!,
   isDocked: link.isDocked ?? false,
   timestamp: Date.now(), // 使用当前时间
-  icon: link.icon
+  icon: link.icon,
+  order: link.order,
 })
 
 // 将链接数组分块
@@ -77,7 +79,14 @@ export const loadLinks = async (): Promise<SavedLink[]> => {
     return Object.values(chunks)
       .flat()
       .map(decompressLink)
-      .sort((a, b) => b.timestamp - a.timestamp)
+      .sort((a, b) => {
+        if (a.categoryId === b.categoryId) {
+          const orderA = a.order ?? 0
+          const orderB = b.order ?? 0
+          return orderA - orderB
+        }
+        return b.timestamp - a.timestamp
+      })
   } catch (error) {
     console.error('Load links error:', error)
     return []
@@ -167,7 +176,8 @@ const validateImportData = (data: any) => {
     categoryId: link.categoryId || 'home',
     timestamp: link.timestamp || Date.now(),
     isDocked: Boolean(link.isDocked),
-    icon: link.icon || ''
+    icon: link.icon || '',
+    order: typeof link.order === 'number' ? link.order : undefined,
   }))
 
   // 确保有首页分类

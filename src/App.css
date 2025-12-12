@@ -1,12 +1,19 @@
 /* 主布局 */
 .app-layout {
   background: #f0f2f5;
-  position: relative;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
   flex-direction: column;
-  height: 100vh;
   padding: 0;
   margin: 0;
+  background-attachment: fixed;
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
 }
 
 /* 内容区域样式 */
@@ -16,6 +23,8 @@
   flex: 1;
   padding: 24px;
   position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .links-grid {
@@ -102,6 +111,7 @@
     margin-left: 0;
     margin-top: 48px;
     padding: 16px;
+    overflow-y: auto;
   }
 
   .links-grid {

@@ -17,12 +17,46 @@ interface LinkCardProps {
   menuItems: any[]
   className?: string
   openInNewTab: boolean
+  draggable?: boolean
+  isDragging?: boolean
+  isDragOver?: boolean
+  isJustDropped?: boolean
+  onDragStart?: (event: React.DragEvent<HTMLDivElement>) => void
+  onDragOver?: (event: React.DragEvent<HTMLDivElement>) => void
+  onDrop?: (event: React.DragEvent<HTMLDivElement>) => void
+  onDragEnd?: (event: React.DragEvent<HTMLDivElement>) => void
 }
 
-const LinkCard: React.FC<LinkCardProps> = ({ link, menuItems, className, openInNewTab }) => {
+const LinkCard: React.FC<LinkCardProps> = ({ 
+  link, 
+  menuItems, 
+  className, 
+  openInNewTab,
+  draggable,
+  isDragging,
+  isDragOver,
+  isJustDropped,
+  onDragStart,
+  onDragOver,
+  onDrop,
+  onDragEnd,
+}) => {
+  const dragClasses = [
+    isDragging ? 'dragging' : '',
+    isDragOver ? 'drag-over' : '',
+    isJustDropped ? 'just-dropped' : '',
+  ].filter(Boolean).join(' ')
+
   return (
     <Dropdown menu={{ items: menuItems }} trigger={['contextMenu']}>
-      <div className={`link-card ${className || ''}`}>
+      <div
+        className={`link-card ${className || ''} ${dragClasses}`}
+        draggable={draggable}
+        onDragStart={onDragStart}
+        onDragOver={onDragOver}
+        onDrop={onDrop}
+        onDragEnd={onDragEnd}
+      >
         <a 
           href={link.url} 
           className="link-content" 

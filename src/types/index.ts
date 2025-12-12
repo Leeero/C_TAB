@@ -14,6 +14,7 @@ export interface SavedLink {
   timestamp: number
   isDocked: boolean
   icon?: string
+  order?: number
 }
 
 export interface SearchEngine {
