@@ -155,3 +155,42 @@
 .category-list::-webkit-scrollbar {
   display: none;
 } 
+.sessions-btn {
+  margin-top: 8px;
+  padding: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #1f1f1f;
+  font-size: 1.25rem;
+  transition: all 0.2s ease;
+  background: transparent;
+}
+
+.sessions-btn:hover {
+  background: rgba(24, 144, 255, 0.1);
+  border-color: #1890ff;
+  color: #1890ff;
+}
+
+@media (prefers-color-scheme: dark) {
+  .sessions-btn {
+    border-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.85);
+  }
+}
+
+.category-item.drag-over {
+  background: rgba(24, 144, 255, 0.15) !important;
+  box-shadow: 0 0 0 2px #1890ff;
+  transform: scale(1.05);
+}
+
+@media (prefers-color-scheme: dark) {
+  .category-item.drag-over {
+    background: rgba(24, 144, 255, 0.2) !important;
+  }
+}

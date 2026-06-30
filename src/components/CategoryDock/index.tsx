@@ -1,13 +1,6 @@
-/*
- * @Author       : leroli
- * @Date         : 2024-12-23 18:34:29
- * @LastEditors  : leroli
- * @LastEditTime : 2024-12-24 14:42:35
- * @Description  : 
- */
-import React from 'react'
+import React, { useState } from 'react'
 import { Dropdown } from 'antd'
-import { PlusOutlined, SettingOutlined } from '@ant-design/icons'
+import { PlusOutlined, SettingOutlined, SaveOutlined } from '@ant-design/icons'
 import { Category } from '../../types'
 import { renderIcon } from '../../utils/iconUtils'
 import './index.css'
@@ -18,7 +11,9 @@ interface CategoryDockProps {
   onSelectCategory: (id: string) => void
   onAddCategory: () => void
   onOpenSettings: () => void
-  getCategoryMenuItems: (category: Category) => any[]
+  onOpenSessions?: () => void
+  getCategoryMenuItems: (category: Category) => Array<{key: string; label: string; icon?: React.ReactNode; danger?: boolean; onClick?: () => void}>
+  onDropLinkToCategory?: (linkId: string, targetCategoryId: string) => void
 }
 
 const CategoryDock: React.FC<CategoryDockProps> = ({
@@ -27,21 +22,50 @@ const CategoryDock: React.FC<CategoryDockProps> = ({
   onSelectCategory,
   onAddCategory,
   onOpenSettings,
-  getCategoryMenuItems
+  onOpenSessions,
+  getCategoryMenuItems,
+  onDropLinkToCategory,
 }) => {
+  const [dragOverCategoryId, setDragOverCategoryId] = useState<string | null>(null)
+
+  const handleCategoryDragOver = (e: React.DragEvent, categoryId: string) => {
+    if (!onDropLinkToCategory) return
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    setDragOverCategoryId(categoryId)
+  }
+
+  const handleCategoryDragLeave = () => {
+    setDragOverCategoryId(null)
+  }
+
+  const handleCategoryDrop = (e: React.DragEvent, categoryId: string) => {
+    if (!onDropLinkToCategory) return
+    e.preventDefault()
+    const linkId = e.dataTransfer.getData('text/plain')
+    if (linkId) {
+      onDropLinkToCategory(linkId, categoryId)
+    }
+    setDragOverCategoryId(null)
+  }
+
   return (
     <div className="category-dock">
       <div className="category-dock-content">
         <div className="category-list">
           {categories.map(category => {
             const menuItems = getCategoryMenuItems(category)
+            const isDragOver = dragOverCategoryId === category.id
             const content = (
               <button
-                className={`category-item ${selectedCategoryId === category.id ? 'active' : ''}`}
+                className={`category-item ${selectedCategoryId === category.id ? 'active' : ''} ${isDragOver ? 'drag-over' : ''}`}
                 onClick={() => onSelectCategory(category.id)}
                 title={category.name}
+                onDragOver={(e) => handleCategoryDragOver(e, category.id)}
+                onDragLeave={handleCategoryDragLeave}
+                onDrop={(e) => handleCategoryDrop(e, category.id)}
               >
-                <div 
+                <div
                   className="category-icon"
                   style={category.color ? {
                     background: category.color,
@@ -68,6 +92,11 @@ const CategoryDock: React.FC<CategoryDockProps> = ({
             )
           })}
         </div>
+        {onOpenSessions && (
+          <button className="sessions-btn" onClick={onOpenSessions} title="标签页会话">
+            <SaveOutlined />
+          </button>
+        )}
         <button className="settings-btn" onClick={onOpenSettings}>
           <SettingOutlined />
         </button>
@@ -79,4 +108,4 @@ const CategoryDock: React.FC<CategoryDockProps> = ({
   )
 }
 
-export default CategoryDock 
+export default CategoryDock
