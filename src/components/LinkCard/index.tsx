@@ -1,10 +1,3 @@
-/*
- * @Author       : leroli
- * @Date         : 2024-12-23 18:34:41
- * @LastEditors  : leroli
- * @LastEditTime : 2024-12-23 19:40:21
- * @Description  : 
- */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react'
 import { Dropdown } from 'antd'
@@ -27,10 +20,10 @@ interface LinkCardProps {
   onDragEnd?: (event: React.DragEvent<HTMLDivElement>) => void
 }
 
-const LinkCard: React.FC<LinkCardProps> = ({ 
-  link, 
-  menuItems, 
-  className, 
+const LinkCard: React.FC<LinkCardProps> = ({
+  link,
+  menuItems,
+  className,
   openInNewTab,
   draggable,
   isDragging,
@@ -57,9 +50,9 @@ const LinkCard: React.FC<LinkCardProps> = ({
         onDrop={onDrop}
         onDragEnd={onDragEnd}
       >
-        <a 
-          href={link.url} 
-          className="link-content" 
+        <a
+          href={link.url}
+          className="link-content"
           target={openInNewTab ? "_blank" : "_self"}
           rel={openInNewTab ? "noopener noreferrer" : ""}
         >
@@ -71,10 +64,20 @@ const LinkCard: React.FC<LinkCardProps> = ({
             )}
           </div>
           <div className="link-title">{link.title}</div>
+          {link.tags && link.tags.length > 0 && (
+            <div className="link-tags">
+              {link.tags.slice(0, 2).map((tag, i) => (
+                <span key={i} className="link-tag">{tag}</span>
+              ))}
+              {link.tags.length > 2 && (
+                <span className="link-tag link-tag-more">+{link.tags.length - 2}</span>
+              )}
+            </div>
+          )}
         </a>
       </div>
     </Dropdown>
   )
 }
 
-export default LinkCard 
+export default LinkCard

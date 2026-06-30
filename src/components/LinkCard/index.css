@@ -179,3 +179,41 @@
     height: 140px;
   }
 } 
+/* ── 标签药丸 ────────────────────────────────────── */
+.link-tags {
+  display: flex;
+  gap: 3px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+
+.link-tag {
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 6px;
+  background: rgba(24, 144, 255, 0.1);
+  color: #1890ff;
+  line-height: 1.4;
+  white-space: nowrap;
+  max-width: 60px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.link-tag-more {
+  background: rgba(0, 0, 0, 0.04);
+  color: #8c8c8c;
+}
+
+@media (prefers-color-scheme: dark) {
+  .link-tag {
+    background: rgba(24, 144, 255, 0.15);
+    color: #40a9ff;
+  }
+
+  .link-tag-more {
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.45);
+  }
+}
