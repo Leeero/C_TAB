@@ -1,0 +1,115 @@
+.bg-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* 裁剪预览区 */
+.bg-editor-crop {
+  position: relative;
+  width: 100%;
+  height: 380px;
+  background: #1a1a1a;
+  border-radius: 8px;
+  overflow: hidden;
+  user-select: none;
+}
+
+.bg-editor-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+/* 半透明遮罩 */
+.bg-editor-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.bg-editor-shade {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+/* 裁剪框 */
+.bg-editor-cropbox {
+  position: absolute;
+  border: 2px solid #fff;
+  cursor: move;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3);
+}
+
+/* 三分线 */
+.bg-editor-grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.bg-editor-grid-v {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.bg-editor-grid-h {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.4);
+}
+
+/* 拖拽手柄 */
+.crop-handle {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+.crop-handle.nw { top: -6px; left: -6px; cursor: nw-resize; }
+.crop-handle.ne { top: -6px; right: -6px; cursor: ne-resize; }
+.crop-handle.sw { bottom: -6px; left: -6px; cursor: sw-resize; }
+.crop-handle.se { bottom: -6px; right: -6px; cursor: se-resize; }
+
+/* 控制区 */
+.bg-editor-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bg-editor-label {
+  font-size: 13px;
+  color: #666;
+  white-space: nowrap;
+  min-width: 50px;
+}
+
+.bg-editor-value {
+  font-size: 13px;
+  color: #333;
+  min-width: 36px;
+  text-align: right;
+}
+
+/* 深色模式 */
+@media (prefers-color-scheme: dark) {
+  .bg-editor-label { color: rgba(255, 255, 255, 0.45); }
+  .bg-editor-value { color: rgba(255, 255, 255, 0.85); }
+}
