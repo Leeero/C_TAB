@@ -1,9 +1,5 @@
 /*
- * @Author       : leroli
- * @Date         : 2024-12-23 12:07:04
- * @LastEditors  : leroli
- * @LastEditTime : 2024-12-24 16:08:45
- * @Description  : 
+ * @Description  : Popup 入口 — 保存当前页面到 C_TAB
  */
 import React from 'react'
 import ReactDOM from 'react-dom/client'
@@ -12,20 +8,26 @@ import PopupComponent from './PopupComponent'
 import { Category } from '../types'
 import { getMatchingIcon } from '../utils/iconUtils'
 import 'antd/dist/reset.css'
-import { 
-  saveLinks, 
-  loadLinks, 
-  saveCategories, 
-  loadCategories 
+import {
+  saveLinks,
+  loadLinks,
+  saveCategories,
+  loadCategories,
 } from '../utils/storage'
 
-const Popup = () => {
+// eslint-disable-next-line react-refresh/only-export-components
+const App = () => {
   const handleSave = async (title: string, url: string, icon: string, categoryId: string) => {
     try {
-      // 加载现有链接
       const existingLinks = await loadLinks()
 
-      // 创建新链接
+      // 检查是否已存在相同 URL 的链接
+      const duplicate = existingLinks.find(link => link.url === url && link.categoryId === categoryId)
+      if (duplicate) {
+        message.warning('该链接已在当前分类中')
+        return
+      }
+
       const newLink = {
         id: Date.now().toString(),
         title: title.trim(),
@@ -33,11 +35,13 @@ const Popup = () => {
         icon,
         categoryId,
         timestamp: Date.now(),
-        isDocked: false
+        isDocked: false,
       }
 
-      // 保存更新后的链接列表
       await saveLinks([...existingLinks, newLink])
+
+      // 通知主页刷新数据
+      chrome.runtime.sendMessage({ type: 'LINK_SAVED', data: newLink }).catch(() => {})
 
       message.success('保存成功')
       setTimeout(() => window.close(), 1000)
@@ -55,11 +59,10 @@ const Popup = () => {
         id: Date.now().toString(),
         name: name.trim(),
         icon: getMatchingIcon(name),
-        isHome: false
+        isHome: false,
       }
 
       await saveCategories([...categories, newCategory])
-
       return newCategory
     } catch (error) {
       console.error('添加分类失败:', error)
@@ -69,10 +72,7 @@ const Popup = () => {
 
   return (
     <ConfigProvider>
-      <PopupComponent 
-        onSave={handleSave}
-        onAddCategory={handleAddCategory}
-      />
+      <PopupComponent onSave={handleSave} onAddCategory={handleAddCategory} />
     </ConfigProvider>
   )
 }
@@ -80,4 +80,4 @@ const Popup = () => {
 const container = document.createElement('div')
 document.body.appendChild(container)
 const root = ReactDOM.createRoot(container)
-root.render(<Popup />) 
+root.render(<App />)

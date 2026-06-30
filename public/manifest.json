@@ -1,11 +1,16 @@
 {
   "manifest_version": 3,
-  "name": "Custom Tab",
-  "description": "A Chrome extension built with React and TypeScript",
-  "version": "1.0.2",
-  "content_security_policy": {
-    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
-  },
+  "name": "Tab Manager",
+  "version": "2.0",
+  "description": "A tab manager extension with session management, tags, and more",
+  "permissions": [
+    "storage",
+    "tabs",
+    "activeTab",
+    "bookmarks",
+    "tabGroups",
+    "contextMenus"
+  ],
   "chrome_url_overrides": {
     "newtab": "index.html"
   },
@@ -13,29 +18,18 @@
     "default_popup": "popup.html",
     "default_icon": {
       "16": "icons/icon-16.png",
-      "32": "icons/icon-32.png",
       "48": "icons/icon-48.png",
       "128": "icons/icon-128.png"
     }
   },
-  "icons": {
-    "16": "icons/icon-16.png",
-    "32": "icons/icon-32.png",
-    "48": "icons/icon-48.png",
-    "128": "icons/icon-128.png"
-  },
-  "permissions": [
-    "storage",
-    "tabs",
-    "bookmarks"
-  ],
-  "host_permissions": [
-    "http://*/*",
-    "https://*/*"
-  ],
   "background": {
     "service_worker": "background.js",
     "type": "module"
+  },
+  "icons": {
+    "16": "icons/icon-16.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
   },
   "content_scripts": [
     {
@@ -43,10 +37,20 @@
       "js": ["content.js"]
     }
   ],
-  "web_accessible_resources": [
-    {
-      "resources": ["icons/*"],
-      "matches": ["<all_urls>"]
+  "commands": {
+    "open-search": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+S",
+        "mac": "Command+Shift+S"
+      },
+      "description": "聚焦搜索框"
+    },
+    "quick-save": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+D",
+        "mac": "Command+Shift+D"
+      },
+      "description": "快速收藏当前页面"
     }
-  ]
-} 
+  }
+}

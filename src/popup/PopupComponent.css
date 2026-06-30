@@ -1,12 +1,14 @@
 .popup-container {
   width: 320px;
   padding: 16px;
+  background: #fff;
+  color: #1f1f1f;
 }
 
 .site-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   margin-bottom: 16px;
 }
 
@@ -14,6 +16,7 @@
   width: 24px;
   height: 24px;
   object-fit: contain;
+  border-radius: 4px;
 }
 
 .site-info h3 {
@@ -29,39 +32,7 @@
 .form-item label {
   display: block;
   margin-bottom: 4px;
-  color: #666;
-  font-size: 12px;
-}
-
-.icon-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-
-.site-icon {
-  width: 32px;
-  height: 32px;
-  object-fit: contain;
-  border-radius: 6px;
-  padding: 2px;
-  background: white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.icon-actions {
-  display: flex;
-  gap: 4px;
-}
-
-.icon-actions .ant-btn {
-  padding: 0 4px;
-  height: 20px;
-  font-size: 12px;
-}
-
-.icon-actions .anticon {
+  color: #8c8c8c;
   font-size: 12px;
 }
 
@@ -79,4 +50,4 @@
   .site-icon {
     background: rgba(255, 255, 255, 0.1);
   }
-} 
+}

@@ -1,10 +1,3 @@
-/*
- * @Author       : leroli
- * @Date         : 2024-12-23 12:11:00
- * @LastEditors  : leroli
- * @LastEditTime : 2024-12-24 16:08:10
- * @Description  : 
- */
 import React, { useState, useEffect } from 'react'
 import { Input, Button, Select, Space, message } from 'antd'
 import { PlusOutlined } from '@ant-design/icons'
@@ -28,7 +21,6 @@ const PopupComponent: React.FC<PopupProps> = ({ onSave, onAddCategory }) => {
   const [newCategoryName, setNewCategoryName] = useState('')
 
   useEffect(() => {
-    // 获取当前标签页信息
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
       const currentTab = tabs[0]
       if (currentTab) {
@@ -40,14 +32,18 @@ const PopupComponent: React.FC<PopupProps> = ({ onSave, onAddCategory }) => {
       }
     })
 
-    // 加载分类列表
     chrome.storage.sync.get(['categories'], (result) => {
       if (result.categories) {
         setCategories(result.categories)
-        // 默认选择第一个分类
-        if (result.categories.length > 0) {
-          setSelectedCategory(result.categories[0].id)
-        }
+        // 读取上次使用的分类
+        chrome.storage.local.get(['ctab_last_category'], (local) => {
+          const lastCat = local.ctab_last_category
+          if (lastCat && result.categories.some((c: Category) => c.id === lastCat)) {
+            setSelectedCategory(lastCat)
+          } else if (result.categories.length > 0) {
+            setSelectedCategory(result.categories[0].id)
+          }
+        })
       }
     })
   }, [])
@@ -61,6 +57,8 @@ const PopupComponent: React.FC<PopupProps> = ({ onSave, onAddCategory }) => {
       message.error('请选择分类')
       return
     }
+    // 记住本次使用的分类
+    chrome.storage.local.set({ ctab_last_category: selectedCategory })
     onSave(title, url, icon, selectedCategory)
   }
 
@@ -78,7 +76,7 @@ const PopupComponent: React.FC<PopupProps> = ({ onSave, onAddCategory }) => {
       setNewCategoryName('')
       message.success('添加分类成功')
     } catch (error) {
-      console.log("❗️ ~ handleAddCategory ~ error:", error);
+      console.error('添加分类失败:', error)
       message.error('添加分类失败')
     }
   }
@@ -86,9 +84,10 @@ const PopupComponent: React.FC<PopupProps> = ({ onSave, onAddCategory }) => {
   return (
     <div className="popup-container">
       <div className="site-info">
-        <h3>保存到C_TAB</h3>
+        {icon && <img src={icon} alt="" className="site-icon" />}
+        <h3>保存到 C_TAB</h3>
       </div>
-      
+
       <div className="form-item">
         <label>标题</label>
         <Input
@@ -106,11 +105,6 @@ const PopupComponent: React.FC<PopupProps> = ({ onSave, onAddCategory }) => {
           onChange={e => setUrl(e.target.value)}
           placeholder="输入网址"
         />
-      </div>
-
-      <div className="form-item">
-        <label>图标</label>
-        {icon && <img src={icon} alt="" className="site-icon" />}
       </div>
 
       <div className="form-item">
@@ -147,7 +141,7 @@ const PopupComponent: React.FC<PopupProps> = ({ onSave, onAddCategory }) => {
                 </Option>
               ))}
             </Select>
-            <Button 
+            <Button
               icon={<PlusOutlined />}
               onClick={() => setIsAddingCategory(true)}
             />
@@ -162,4 +156,4 @@ const PopupComponent: React.FC<PopupProps> = ({ onSave, onAddCategory }) => {
   )
 }
 
-export default PopupComponent 
+export default PopupComponent
