@@ -1,4 +1,6 @@
-/* Ant Design 组件主题覆盖 */
+/* ── Ant Design 深色模式覆盖 ─────────────────────────── */
+
+/* Modal */
 .ant-modal-content {
   padding: var(--spacing-lg);
   border-radius: var(--border-radius-xl);
@@ -6,6 +8,7 @@
   background: var(--component-background);
 }
 
+/* Dropdown */
 .ant-dropdown-menu {
   padding: var(--spacing-xs);
   border-radius: var(--border-radius-md);
@@ -14,13 +17,56 @@
   box-shadow: var(--shadow-md);
 }
 
+/* Input */
 .ant-input-affix-wrapper {
   border-radius: var(--border-radius-lg);
   border-color: var(--border-color);
   background: var(--component-background);
 }
 
-/* 滚动条样式 */
+/* Select dropdown */
+.ant-select-dropdown {
+  background: var(--component-background);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-md);
+}
+
+.ant-select-item {
+  color: var(--text-color);
+}
+
+.ant-select-item-option-active,
+.ant-select-item-option-selected {
+  background: rgba(24, 144, 255, 0.1) !important;
+}
+
+/* Radio */
+.ant-radio-wrapper {
+  color: var(--text-color);
+}
+
+/* Switch text */
+.ant-switch-checked .ant-switch-inner {
+  background: var(--primary-color);
+}
+
+/* Form labels */
+.ant-form-item-label > label {
+  color: var(--text-color) !important;
+}
+
+/* Placeholder */
+::placeholder {
+  color: var(--text-color-secondary) !important;
+  opacity: 1;
+}
+
+::-webkit-input-placeholder {
+  color: var(--text-color-secondary) !important;
+  opacity: 1;
+}
+
+/* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -35,8 +81,192 @@
   border-radius: var(--border-radius-sm);
 }
 
+/* ── 深色模式全局覆盖 ─────────────────────────────── */
 @media (prefers-color-scheme: dark) {
+  /* Modal */
+  .ant-modal-content {
+    background: #1f1f1f;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .ant-modal-header {
+    background: #1f1f1f;
+  }
+
+  .ant-modal-title {
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  .ant-modal-close {
+    color: rgba(255, 255, 255, 0.45);
+  }
+
+  /* Dropdown */
+  .ant-dropdown-menu {
+    background: #1f1f1f;
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .ant-dropdown-menu-item {
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  .ant-dropdown-menu-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .ant-dropdown-menu-item-danger {
+    color: #ff4d4f;
+  }
+
+  /* Input */
+  .ant-input,
+  .ant-input-affix-wrapper,
+  .ant-select-selector,
+  .ant-picker {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: rgba(255, 255, 255, 0.85) !important;
+  }
+
+  .ant-input::placeholder,
+  .ant-input-affix-wrapper .ant-input::placeholder {
+    color: rgba(255, 255, 255, 0.35) !important;
+  }
+
+  .ant-input-affix-wrapper:hover,
+  .ant-input-affix-wrapper-focused {
+    border-color: #1890ff !important;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2) !important;
+  }
+
+  /* Select */
+  .ant-select-dropdown {
+    background: #1f1f1f;
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .ant-select-item {
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  .ant-select-item-option-active {
+    background: rgba(255, 255, 255, 0.06) !important;
+  }
+
+  .ant-select-item-option-selected {
+    background: rgba(24, 144, 255, 0.15) !important;
+  }
+
+  .ant-select-arrow,
+  .ant-select-clear {
+    color: rgba(255, 255, 255, 0.45);
+  }
+
+  /* Radio */
+  .ant-radio-wrapper {
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  .ant-radio-button-wrapper {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.65);
+  }
+
+  .ant-radio-button-wrapper-checked {
+    background: rgba(24, 144, 255, 0.15);
+    border-color: #1890ff;
+    color: #40a9ff;
+  }
+
+  /* Switch */
+  .ant-switch {
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  .ant-switch-checked {
+    background: #1890ff;
+  }
+
+  .ant-switch-inner {
+    color: rgba(255, 255, 255, 0.65);
+  }
+
+  /* ColorPicker */
+  .ant-color-picker {
+    background: #1f1f1f;
+  }
+
+  .ant-color-picker-trigger {
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+
+  /* Upload */
+  .ant-upload-list-item-name {
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  /* Tooltip */
+  .ant-tooltip-inner {
+    background: #1f1f1f;
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  /* Form */
+  .ant-form-item-explain-error {
+    color: #ff4d4f;
+  }
+
+  /* Scrollbar */
   ::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.2);
   }
-} 
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  /* Message toast */
+  .ant-message-notice-content {
+    background: #1f1f1f;
+    color: rgba(255, 255, 255, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* Button */
+  .ant-btn-default {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  .ant-btn-default:hover {
+    border-color: #40a9ff;
+    color: #40a9ff;
+  }
+
+  /* Popconfirm / Popover */
+  .ant-popover-inner {
+    background: #1f1f1f;
+  }
+
+  /* Compact space */
+  .ant-space-compact .ant-btn-default {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.85);
+  }
+}
+
+/* ── 移动端适配 ─────────────────────────────────────── */
+@media (max-width: 768px) {
+  .ant-modal {
+    max-width: calc(100vw - 32px);
+    margin: 16px;
+  }
+
+  .ant-modal-content {
+    padding: 16px;
+  }
+}

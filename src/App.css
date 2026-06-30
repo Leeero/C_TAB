@@ -19,7 +19,7 @@
 /* 内容区域样式 */
 .app-content {
   margin-left: 152px;
-  margin-top: 10%;
+  margin-top: 14%;
   flex: 1;
   padding: 24px;
   position: relative;
@@ -53,6 +53,11 @@
 
 .settings-section:last-child {
   margin-bottom: 0;
+}
+
+.settings-section + .settings-section {
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  padding-top: 20px;
 }
 
 .settings-section h3 {
@@ -289,4 +294,18 @@
   .color-preset {
     border-color: rgba(255, 255, 255, 0.1);
   }
+}
+
+/* ── 标签输入组件 ────────────────────────────────── */
+.tag-input-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  padding: 4px 0;
+}
+
+.tag-input-wrapper .ant-tag {
+  border-radius: 6px;
+  font-size: 12px;
 }

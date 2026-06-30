@@ -1,689 +1,363 @@
 /*
  * @Author       : leroli
  * @Date         : 2024-12-23 11:12:53
- * @LastEditors  : leroli
- * @LastEditTime : 2024-12-31 16:20:04
  * @Description  : 首页
  */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
-  Layout,
-  Modal,
-  message,
-  Input,
-  Radio,
-  Row,
-  Col,
-  Select,
-  Button,
-  Form,
-  Space,
-  Upload,
-  Switch,
+  Layout, Modal, message, Input, Radio, Row, Col, Select,
+  Button, Form, Space, Upload, Switch, Tag, Popconfirm,
 } from "antd";
 import {
-  EditOutlined,
-  DeleteOutlined,
-  StarOutlined,
-  StarFilled,
-  PlusOutlined,
-  PictureOutlined,
+  EditOutlined, DeleteOutlined, StarOutlined, StarFilled,
+  PlusOutlined, PictureOutlined,
 } from "@ant-design/icons";
 import SearchBox from "./components/SearchBox";
 import CategoryDock from "./components/CategoryDock";
 import LinkCard from "./components/LinkCard";
 import DockBar from "./components/DockBar";
 import CategoryForm from "./components/CategoryForm";
-import { Category, SavedLink } from "./types";
-import { BingImage } from "./utils/bingImages";
+import BackgroundEditor from "./components/BackgroundEditor";
+import SessionManager from "./components/SessionManager";
+import ErrorBoundary from "./components/ErrorBoundary";
+import { Category, SavedLink, SearchEngine } from "./types";
 import "./App.css";
-import { getSearchUrl } from "./config/searchEngines";
+import { getSearchUrl, builtinSearchEngines } from "./config/searchEngines";
 import styles from "./App.css?inline";
-import { getBingImages } from "./utils/bingImages";
-import {
-  saveLinks,
-  loadLinks,
-  saveCategories,
-  loadCategories,
-  loadSettings,
-  saveSettings,
-  exportData,
-  importData,
-} from "./utils/storage";
+import { saveLinks, saveCategories, loadLinks, loadCategories } from "./utils/storage";
+import { importFromBookmarks, exportToBookmarks } from "./utils/bookmarks";
+import { checkAllLinks } from "./utils/linkHealth";
+import { openCategoryAsTabGroup } from "./utils/tabGroups";
+import { AppstoreOutlined } from "@ant-design/icons";
+import { useCategories } from "./hooks/useCategories";
+import { useLinks } from "./hooks/useLinks";
+import { useSettings } from "./hooks/useSettings";
+import { useBackground } from "./hooks/useBackground";
+import { useSessions } from "./hooks/useSessions";
 
 const { Content } = Layout;
 
-function App() {
+function AppInner() {
   const [messageApi, contextHolder] = message.useMessage();
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [savedLinks, setSavedLinks] = useState<SavedLink[]>([]);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
-  const [searchText, setSearchText] = useState("");
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [isSettingsVisible, setIsSettingsVisible] = useState(false);
-  const [selectedSearchEngine, setSelectedSearchEngine] =
-    useState<string>("google");
-  const [dockedLinks, setDockedLinks] = useState<SavedLink[]>([]);
-  const [isEditLinkModalVisible, setIsEditLinkModalVisible] = useState(false);
-  const [editingLink, setEditingLink] = useState<SavedLink | null>(null);
-  const [editLinkTitle, setEditLinkTitle] = useState("");
-  const [editLinkUrl, setEditLinkUrl] = useState("");
-  const [isRenameModalVisible, setIsRenameModalVisible] = useState(false);
-  const [renamingCategory, setRenamingCategory] = useState<Category | null>(
-    null
+  const notify = useCallback(
+    (type: "success" | "error", msg: string) => {
+      if (type === "success") messageApi.success(msg);
+      else messageApi.error(msg);
+    },
+    [messageApi]
   );
-  const [isAddLinkModalVisible, setIsAddLinkModalVisible] = useState(false);
-  const [newLinkTitle, setNewLinkTitle] = useState("");
-  const [newLinkUrl, setNewLinkUrl] = useState("");
-  const [editLinkCategory, setEditLinkCategory] = useState<string>("");
-  const [backgroundImageUrl, setBackgroundImageUrl] = useState<string>("");
-  const [backgroundColor, setBackgroundColor] = useState<string>("#f0f2f5");
-  const [bingImages, setBingImages] = useState<BingImage[]>([]);
-  const [loadingImages, setLoadingImages] = useState(false);
+
+  const cat = useCategories(notify);
+  const links = useLinks(notify);
+  const settings = useSettings(notify);
+  const bg = useBackground(notify);
+  const sessions = useSessions(notify);
+
+  const [searchText, setSearchText] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [form] = Form.useForm();
   const [editForm] = Form.useForm();
-  const [openInNewTab, setOpenInNewTab] = useState(true);
-  const [draggingLinkId, setDraggingLinkId] = useState<string | null>(null);
-  const [dragOverLinkId, setDragOverLinkId] = useState<string | null>(null);
-  const [justDroppedLinkId, setJustDroppedLinkId] = useState<string | null>(null);
 
-  // 加载数据
+  // 自定义引擎管理状态
+  const [isEngineModalOpen, setIsEngineModalOpen] = useState(false);
+  const [newEngineName, setNewEngineName] = useState("");
+  const [newEngineUrl, setNewEngineUrl] = useState("");
+
+  // ── 初始化 ────────────────────────────────────────
   useEffect(() => {
-    const loadData = async () => {
-      let loadedCategories = await loadCategories();
+    const init = async () => {
+      const loadedCategories = await cat.initCategories();
+      await links.loadAllLinks();
+      await settings.initSettings();
+      await bg.initBackground();
+      await sessions.initSessions();
 
-      // 如果没有分类，创建首页分类
-      if (loadedCategories.length === 0) {
-        const homeCategory: Category = {
-          id: "home",
-          name: "首页",
-          icon: "HomeOutlined",
-          isHome: true,
-        };
-        loadedCategories = [homeCategory];
-        await saveCategories(loadedCategories);
-      }
-
-      const loadedLinks = await loadLinks();
-      setCategories(loadedCategories);
-      setSavedLinks(loadedLinks);
-      setSelectedCategoryId(loadedCategories[0].id);
-    };
-    loadData();
-  }, []);
-
-  // 更新固定链接
-  useEffect(() => {
-    const dockedItems = savedLinks.filter((link) => link.isDocked);
-    setDockedLinks(dockedItems);
-  }, [savedLinks]);
-
-  // 加载设置
-  useEffect(() => {
-    const loadAppSettings = async () => {
-      const settings = await loadSettings();
-      setSelectedSearchEngine(settings.searchEngine);
-      setBackgroundColor(settings.backgroundColor);
-      setBackgroundImageUrl(settings.backgroundImageUrl);
-      setOpenInNewTab(settings.openInNewTab);
-    };
-    loadAppSettings();
-  }, []);
-
-  // 修改加载背景图片的 useEffect
-  useEffect(() => {
-    const loadBackground = async () => {
-      try {
-        const result = await chrome.storage.sync.get([
-          "backgroundImageUrl",
-          "backgroundColor",
-        ]);
-        if (result.backgroundImageUrl) {
-          setBackgroundImageUrl(result.backgroundImageUrl);
-        }
-        if (result.backgroundColor) {
-          setBackgroundColor(result.backgroundColor);
-        }
-      } catch (error) {
-        console.error("加载背景设置失败:", error);
+      const allLinks = links.savedLinks;
+      if (allLinks.length > 0 || loadedCategories.length > 1) {
+        chrome.storage.local
+          .set({
+            ctab_backup_links: allLinks.map((l) => ({
+              id: l.id, title: l.title, url: l.url, categoryId: l.categoryId,
+              isDocked: l.isDocked, icon: l.icon, order: l.order, timestamp: l.timestamp,
+            })),
+            ctab_backup_categories: loadedCategories,
+          })
+          .catch(() => {});
       }
     };
-    loadBackground();
+    init();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 搜索处理
-  const handleKeyPress = () => {
-    if (!searchText.trim()) return;
-    const searchUrl = getSearchUrl(selectedSearchEngine, searchText);
-    window.open(searchUrl, "_blank");
-  };
-
-  // 分类菜单项
-  const getCategoryMenuItems = (category: Category) => {
-    if (category.isHome) return [];
-
-    return [
-      {
-        key: "rename",
-        label: "重命名",
-        icon: <EditOutlined />,
-        onClick: () => handleOpenRename(category),
-      },
-      {
-        key: "delete",
-        label: "删除",
-        icon: <DeleteOutlined />,
-        danger: true,
-        onClick: () => handleDeleteCategory(category.id),
-      },
-    ];
-  };
-
-  // 修改链接菜单项
-  const getLinkMenuItems = (link: SavedLink) => [
-    {
-      key: "dock",
-      label: link.isDocked ? "取消固定" : "固定到底栏",
-      icon: link.isDocked ? <StarFilled /> : <StarOutlined />,
-      onClick: () => handleToggleDock(link),
-    },
-    {
-      key: "edit",
-      label: "编辑",
-      icon: <EditOutlined />,
-      onClick: () => handleEditLink(link),
-    },
-    {
-      key: "delete",
-      label: "删除",
-      icon: <DeleteOutlined />,
-      danger: true,
-      onClick: () => handleDeleteLink(link),
-    },
-  ];
-
-  // 删除分类
-  const handleDeleteCategory = async (categoryId: string) => {
-    const category = categories.find((c) => c.id === categoryId);
-    if (category?.isHome) {
-      messageApi.error("首页分类不能删除");
-      return;
-    }
-
-    const updatedCategories = categories.filter((c) => c.id !== categoryId);
-    const updatedLinks = savedLinks.filter(
-      (link) => link.categoryId !== categoryId
-    );
-
-    await Promise.all([
-      saveCategories(updatedCategories),
-      saveLinks(updatedLinks),
-    ]);
-
-    setCategories(updatedCategories);
-    setSavedLinks(updatedLinks);
-    setSelectedCategoryId(updatedCategories[0].id);
-    messageApi.success("删除成功");
-  };
-
-  // 切换固定状态
-  const handleToggleDock = async (link: SavedLink) => {
-    const updatedLinks = savedLinks.map((item) =>
-      item.id === link.id ? { ...item, isDocked: !item.isDocked } : item
-    );
-    await saveLinks(updatedLinks);
-    setSavedLinks(updatedLinks);
-  };
-
-  // 链接分组（按 order 排序）
-  const groupedLinks = React.useMemo(() => {
-    const groups = savedLinks.reduce((acc, link) => {
-      if (!acc[link.categoryId]) {
-        acc[link.categoryId] = [];
-      }
-      acc[link.categoryId].push(link);
-      return acc;
-    }, {} as { [key: string]: SavedLink[] });
-
-    // 每个分类内部按 order 排序
-    Object.keys(groups).forEach((categoryId) => {
-      groups[categoryId].sort((a, b) => {
-        const orderA = a.order ?? Number.MAX_SAFE_INTEGER;
-        const orderB = b.order ?? Number.MAX_SAFE_INTEGER;
-        return orderA - orderB;
-      });
-    });
-
-    return groups;
-  }, [savedLinks]);
-
-  // 处理拖拽排序（当前分类内移动链接顺序）
-  const handleReorderLinksInCategory = async (
-    sourceId: string,
-    targetId: string,
-    categoryId: string
-  ) => {
-    if (!sourceId || !targetId || sourceId === targetId) return;
-
-    const categoryLinks = savedLinks.filter(
-      (link) => link.categoryId === categoryId
-    );
-
-    const sourceIndex = categoryLinks.findIndex((link) => link.id === sourceId);
-    const targetIndex = categoryLinks.findIndex((link) => link.id === targetId);
-
-    if (sourceIndex === -1 || targetIndex === -1) return;
-
-    const reorderedCategoryLinks = [...categoryLinks];
-    const [moved] = reorderedCategoryLinks.splice(sourceIndex, 1);
-    reorderedCategoryLinks.splice(targetIndex, 0, moved);
-
-    const updatedLinks = savedLinks.map((link) => {
-      if (link.categoryId !== categoryId) return link;
-      const indexInCategory = reorderedCategoryLinks.findIndex(
-        (item) => item.id === link.id
-      );
-      if (indexInCategory === -1) return link;
-      return {
-        ...link,
-        order: indexInCategory,
-      };
-    });
-
-    await saveLinks(updatedLinks);
-    setSavedLinks(updatedLinks);
-
-    // 触发落地动画
-    setJustDroppedLinkId(sourceId);
-    setTimeout(() => setJustDroppedLinkId(null), 400);
-
-    messageApi.success("排序已保存");
-  };
-
-  // 处理添加分类
-  const handleAddCategory = async (values: {
-    name: string;
-    icon: string;
-    color?: string;
-  }) => {
-    const newCategory: Category = {
-      id: Date.now().toString(),
-      name: values.name.trim(),
-      icon: values.icon,
-      color: values.color, // 已经是十六进制字符串
-      isHome: false,
-    };
-
-    const updatedCategories = [...categories, newCategory];
-    await chrome.storage.sync.set({ categories: updatedCategories });
-    setCategories(updatedCategories);
-    setIsModalVisible(false);
-    messageApi.success("添加成功");
-  };
-
-  // 处理编辑链接
-  const handleEditLink = (link: SavedLink) => {
-    setEditingLink(link);
-    setEditLinkTitle(link.title);
-    setEditLinkUrl(link.url);
-    setEditLinkCategory(link.categoryId);
-    setIsEditLinkModalVisible(true);
-  };
-
-  // 保存编辑的链接
-  const handleSaveLink = async () => {
-    if (!editingLink || !editLinkTitle.trim() || !editLinkUrl.trim()) {
-      messageApi.error("请填写完整信息");
-      return;
-    }
-
-    try {
-      const updatedLinks = savedLinks.map((link) =>
-        link.id === editingLink.id
-          ? {
-              ...link,
-              title: editLinkTitle.trim(),
-              url: editLinkUrl.trim(),
-              categoryId: editLinkCategory,
-              timestamp: Date.now(),
-            }
-          : link
-      );
-
-      await saveLinks(updatedLinks);
-      setSavedLinks(updatedLinks);
-      setIsEditLinkModalVisible(false);
-      messageApi.success("修改成功");
-    } catch (error) {
-      console.error("Edit link error:", error);
-      messageApi.error("修改失败");
-    }
-  };
-
-  // 处理删除链接
-  const handleDeleteLink = async (link: SavedLink) => {
-    try {
-      const updatedLinks = savedLinks.filter((item) => item.id !== link.id);
-      await saveLinks(updatedLinks);
-      setSavedLinks(updatedLinks);
-      messageApi.success("删除成功");
-    } catch (error) {
-      console.error("Delete link error:", error);
-      messageApi.error("删除失败");
-    }
-  };
-
-  // 添加保存设置函数
-  const handleSaveSettings = async () => {
-    await saveSettings({ 
-      searchEngine: selectedSearchEngine,
-      openInNewTab
-    });
-    messageApi.success('设置保存成功');
-    setIsSettingsVisible(false);
-  };
-
-  // 处理重命名
-  const handleRenameCategory = async (values: {
-    name: string;
-    icon: string;
-    color?: string;
-  }) => {
-    if (!renamingCategory) return;
-
-    const updatedCategories = categories.map((category) =>
-      category.id === renamingCategory.id
-        ? {
-            ...category,
-            name: values.name.trim(),
-            icon: values.icon,
-            color: values.color,
+  useEffect(() => {
+    const handleMessage = (message: { type: string }) => {
+      if (message.type === "DATA_REFRESHED") {
+        links.loadAllLinks();
+        loadCategories().then((cats) => {
+          cat.setCategories(cats);
+          if (cats.length > 0 && !cat.selectedCategoryId) {
+            cat.setSelectedCategoryId(cats[0].id);
           }
-        : category
-    );
+        });
+      }
+    };
+    chrome.runtime.onMessage.addListener(handleMessage);
+    return () => chrome.runtime.onMessage.removeListener(handleMessage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cat.selectedCategoryId]);
 
-    await saveCategories(updatedCategories);
-    setCategories(updatedCategories);
-    setIsRenameModalVisible(false);
-    setRenamingCategory(null);
-    messageApi.success("修改成功");
-  };
+  // ── 搜索 ──────────────────────────────────────────
+  const handleKeyPress = useCallback(() => {
+    if (!searchText.trim()) return;
+    const searchUrl = getSearchUrl(settings.selectedSearchEngine, searchText, settings.customEngines);
+    window.open(searchUrl, "_blank");
+  }, [searchText, settings.selectedSearchEngine, settings.customEngines]);
 
-  // 打开重命名模态框
-  const handleOpenRename = (category: Category) => {
-    setRenamingCategory(category);
-    setIsRenameModalVisible(true);
-  };
-
-  // 获取网站 favicon
-  const getFavicon = async (url: string): Promise<string> => {
+  // ── Favicon 三级 fallback ─────────────────────────
+  const getFavicon = useCallback(async (url: string): Promise<string> => {
     try {
       const urlObj = new URL(url);
       const domain = urlObj.hostname;
-
-      // 尝试不同的 favicon 路径
-      const faviconUrls = [
+      // 优先尝试 origin/favicon
+      const localUrls = [
         `${urlObj.origin}/favicon.ico`,
         `${urlObj.origin}/favicon.png`,
-        `https://www.google.com/s2/favicons?domain=${domain}&sz=64`, // Google 的 favicon 服务
       ];
-
-      // 检查图标是否可访问
-      for (const faviconUrl of faviconUrls) {
+      for (const faviconUrl of localUrls) {
         try {
           const response = await fetch(faviconUrl);
-          if (response.ok) {
-            return faviconUrl;
-          }
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (error) {
-          continue;
-        }
+          if (response.ok) return faviconUrl;
+        } catch { continue; }
       }
-
-      // 如果都失败了，返回 Google 的 favicon 服务
+      // Google Favicon 服务
       return `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
-    } catch (error) {
-      console.error("获取 favicon 失败:", error);
-      return ""; // 返回空字符串表示使用默认图标
-    }
-  };
+    } catch { return ""; }
+  }, []);
 
-  // 修改添加链接的处理函数
-  const handleAddLink = async () => {
-    if (!newLinkTitle.trim() || !newLinkUrl.trim()) {
-      messageApi.error("请填写完整信息");
+  // ── 标签组 ────────────────────────────────────────
+  const handleOpenAsTabGroup = useCallback(async (categoryId: string) => {
+    const count = await openCategoryAsTabGroup(categoryId);
+    if (count > 0) {
+      notify("success", `已在标签组中打开 ${count} 个标签页`);
+    } else {
+      notify("error", "该分类下没有链接");
+    }
+  }, [notify]);
+
+  // ── 菜单项 ────────────────────────────────────────
+  const getCategoryMenuItems = useCallback(
+    (category: Category) => {
+      if (category.isHome) return [];
+      return [
+        { key: "rename", label: "重命名", icon: <EditOutlined />, onClick: () => cat.openRename(category) },
+        {
+          key: "tabgroup", label: "在标签组中打开", icon: <AppstoreOutlined />,
+          onClick: () => handleOpenAsTabGroup(category.id),
+        },
+        {
+          key: "delete", label: "删除", icon: <DeleteOutlined />, danger: true,
+          onClick: () => cat.deleteCategory(category.id, links.savedLinks).then((updated) => {
+            if (updated) links.setSavedLinks(updated);
+          }),
+        },
+      ];
+    },
+    [cat, links, handleOpenAsTabGroup]
+  );
+
+  const getLinkMenuItems = useCallback(
+    (link: SavedLink) => [
+      {
+        key: "dock", label: link.isDocked ? "取消固定" : "固定到底栏",
+        icon: link.isDocked ? <StarFilled /> : <StarOutlined />,
+        onClick: () => links.toggleDock(link),
+      },
+      { key: "edit", label: "编辑", icon: <EditOutlined />, onClick: () => links.openEditLink(link) },
+      { key: "delete", label: "删除", icon: <DeleteOutlined />, danger: true, onClick: () => links.deleteLink(link) },
+    ],
+    [links]
+  );
+
+
+
+  // ── 书签同步 ──────────────────────────────────────
+  const [isSyncingBookmarks, setIsSyncingBookmarks] = useState(false);
+
+  const handleImportFromBookmarks = useCallback(async () => {
+    setIsSyncingBookmarks(true);
+    try {
+      const { categories: newCats, links: newLinks } = await importFromBookmarks();
+      if (newCats.length === 0 && newLinks.length === 0) {
+        notify("success", "没有发现新的书签数据");
+        setIsSyncingBookmarks(false);
+        return;
+      }
+      Modal.confirm({
+        title: "确认导入书签",
+        content: (
+          <div>
+            <p>发现以下可导入的书签数据：</p>
+            <p style={{ margin: "8px 0" }}>
+              <b>{newLinks.length}</b> 个书签链接
+              {newCats.length > 0 && <>, <b>{newCats.length}</b> 个文件夹</>}
+            </p>
+            {newCats.length > 0 && (
+              <p style={{ fontSize: 12, color: "#8c8c8c" }}>
+                文件夹：{newCats.map(c => c.name).join("、")}
+              </p>
+            )}
+            <p style={{ fontSize: 12, color: "#8c8c8c" }}>已存在的书签不会重复导入。</p>
+          </div>
+        ),
+        okText: "确认导入",
+        cancelText: "取消",
+        onOk: async () => {
+          const existingLinks = await loadLinks();
+          const existingCats = await loadCategories();
+          await saveLinks([...existingLinks, ...newLinks]);
+          await saveCategories([...existingCats, ...newCats]);
+          await links.loadAllLinks();
+          await cat.initCategories();
+          notify("success", `导入 ${newLinks.length} 个书签，${newCats.length} 个文件夹`);
+        },
+      });
+    } catch (error) {
+      console.error("Bookmarks import error:", error);
+      notify("error", "书签导入失败");
+    } finally {
+      setIsSyncingBookmarks(false);
+    }
+  }, [links, cat, notify]);
+
+  const handleExportToBookmarks = useCallback(async () => {
+    try {
+      await exportToBookmarks();
+      notify("success", "已导出到 Chrome 书签栏 'C_TAB Bookmarks' 文件夹");
+    } catch (error) {
+      console.error("Bookmarks export error:", error);
+      notify("error", "书签导出失败");
+    }
+  }, [notify]);
+
+  // ── 链接健康检测 ──────────────────────────────────
+  const [isCheckingLinks, setIsCheckingLinks] = useState(false);
+  const [checkProgress, setCheckProgress] = useState({ checked: 0, total: 0 });
+
+  const handleCheckLinks = useCallback(async () => {
+    setIsCheckingLinks(true);
+    setCheckProgress({ checked: 0, total: 0 });
+    try {
+      await checkAllLinks((checked, total) => {
+        setCheckProgress({ checked, total });
+      });
+      notify("success", "链接检测完成");
+    } catch (error) {
+      console.error("Link check error:", error);
+      notify("error", "链接检测失败");
+    } finally {
+      setIsCheckingLinks(false);
+    }
+  }, [notify]);
+
+  // ── 自定义引擎管理 ────────────────────────────────
+  const handleAddEngine = useCallback(() => {
+    if (!newEngineName.trim() || !newEngineUrl.trim()) {
+      notify("error", "请填写引擎名称和搜索 URL");
       return;
     }
-
-    try {
-      const newUrl = newLinkUrl.startsWith("http")
-        ? newLinkUrl
-        : `https://${newLinkUrl}`;
-
-      // 获取网站标题（如果用户没有输入标题）
-      let title = newLinkTitle.trim();
-      if (!title) {
-        try {
-          const response = await fetch(newUrl);
-          const html = await response.text();
-          const doc = new DOMParser().parseFromString(html, "text/html");
-          title = doc.title || newUrl;
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        } catch (error) {
-          title = newUrl;
-        }
-      }
-
-      // 获取网站图标
-      const icon = await getFavicon(newUrl);
-
-      const newLink: SavedLink = {
-        id: Date.now().toString(),
-        title,
-        url: newUrl,
-        categoryId: selectedCategoryId,
-        timestamp: Date.now(),
-        isDocked: false,
-        icon,
-      };
-
-      const updatedLinks = [...savedLinks, newLink];
-      await saveLinks(updatedLinks);
-      setSavedLinks(updatedLinks);
-      setIsAddLinkModalVisible(false);
-      setNewLinkTitle("");
-      setNewLinkUrl("");
-      messageApi.success("添加成功");
-    } catch (error) {
-      console.log("❗️ ~ handleAddLink ~ error:", error);
-      messageApi.error("添加失败");
+    if (!newEngineUrl.includes("{keyword}")) {
+      notify("error", "搜索 URL 必须包含 {keyword} 占位符");
+      return;
     }
-  };
+    const engine: SearchEngine = {
+      id: `custom_${Date.now()}`,
+      name: newEngineName.trim(),
+      searchUrl: newEngineUrl.trim(),
+      isBuiltin: false,
+    };
+    settings.addEngine(engine);
+    setNewEngineName("");
+    setNewEngineUrl("");
+    setIsEngineModalOpen(false);
+  }, [newEngineName, newEngineUrl, settings, notify]);
 
-  // 修改选择图片的函数
-  const handleSelectBingImage = async (url: string) => {
-    await saveSettings({
-      backgroundImageUrl: url,
-      backgroundColor: "", // 清除背景色
-    });
-    setBackgroundImageUrl(url);
-    setBackgroundColor("");
-    messageApi.success("背景设置成功");
-  };
-
-  // 修改选择纯色背景的函数
-  const handleSelectColor = async (color: string) => {
-    await saveSettings({
-      backgroundColor: color,
-      backgroundImageUrl: "", // 清除背景图
-    });
-    setBackgroundColor(color);
-    setBackgroundImageUrl("");
-    messageApi.success("背景设置成功");
-  };
-
-  // 添加加载 Bing 图片的函数
-  const loadBingImages = async () => {
-    try {
-      setLoadingImages(true);
-      const images = await getBingImages();
-      setBingImages(images);
-    } catch (error) {
-      console.log("❗️ ~ loadBingImages ~ error:", error);
-      messageApi.error("获取 Bing 图片失败");
-    } finally {
-      setLoadingImages(false);
-    }
-  };
-
-  // 添加导入导出相关函数
-  const handleExportData = async () => {
-    try {
-      const data = await exportData()
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
-      const url = URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = `c-tab-backup-${new Date().toISOString().split('T')[0]}.json`
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      URL.revokeObjectURL(url)
-      messageApi.success('导出成功')
-    } catch (error) {
-      console.error('Export error:', error)
-      messageApi.error('导出失败')
-    }
-  }
-
-  const handleImportData = async (file: File) => {
-    try {
-      const text = await file.text()
-      const data = JSON.parse(text)
-      await importData(data)
-      
-      // 重新加载数据
-      const [loadedCategories, loadedLinks, settings] = await Promise.all([
-        loadCategories(),
-        loadLinks(),
-        loadSettings()
-      ])
-
-      // 确保有数据再设置状态
-      if (loadedCategories.length > 0) {
-        setCategories(loadedCategories)
-        setSelectedCategoryId(loadedCategories[0].id)
-      }
-      
-      if (loadedLinks) {
-        setSavedLinks(loadedLinks)
-      }
-
-      if (settings) {
-        setSelectedSearchEngine(settings.searchEngine || 'google')
-        setBackgroundColor(settings.backgroundColor || '#f0f2f5')
-        setBackgroundImageUrl(settings.backgroundImageUrl || '')
-      }
-
-      messageApi.success('导入成功')
-    } catch (error) {
-      console.error('Import error:', error)
-      messageApi.error('导入失败：' + (error as Error).message)
-    }
-  }
+  // 合并引擎列表
+  const allEngines = [...builtinSearchEngines, ...settings.customEngines];
 
   return (
-    <div
-      className="app-layout"
-      style={
-        backgroundImageUrl
-          ? {
-              backgroundImage: `url(${backgroundImageUrl})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              backgroundRepeat: "no-repeat",
-            }
-          : {
-              backgroundColor,
-            }
-      }
-    >
+    <div className="app-layout" style={{ backgroundColor: bg.backgroundColor || "#f0f2f5" }}>
+      {bg.backgroundImageUrl && (
+        <div style={{
+          position: "absolute", inset: 0,
+          backgroundImage: `url(${bg.backgroundImageUrl})`,
+          backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat",
+          opacity: bg.bgOpacity / 100, pointerEvents: "none", zIndex: 0,
+        }} />
+      )}
       <style>{styles}</style>
       {contextHolder}
 
       <SearchBox
-        searchText={searchText}
-        onSearch={setSearchText}
-        onKeyPress={handleKeyPress}
-        searchEngine={selectedSearchEngine}
+        searchText={searchText} onSearch={setSearchText} onKeyPress={handleKeyPress}
+        searchEngine={settings.selectedSearchEngine} savedLinks={links.savedLinks}
+        customEngines={settings.customEngines}
+        onToggleDock={links.toggleDock}
       />
 
       <CategoryDock
-        categories={categories}
-        selectedCategoryId={selectedCategoryId}
-        onSelectCategory={setSelectedCategoryId}
-        onAddCategory={() => setIsModalVisible(true)}
-        onOpenSettings={() => setIsSettingsVisible(true)}
+        categories={cat.categories} selectedCategoryId={cat.selectedCategoryId}
+        onSelectCategory={cat.setSelectedCategoryId}
+        onAddCategory={() => cat.setIsModalVisible(true)}
+        onOpenSettings={() => settings.setIsSettingsVisible(true)}
+        onOpenSessions={() => sessions.setIsSessionManagerOpen(true)}
         getCategoryMenuItems={getCategoryMenuItems}
+        onDropLinkToCategory={links.moveLinkToCategory}
       />
 
       <Content className="app-content">
         <div className="content-scroll">
-          {selectedCategoryId && (
+          {cat.selectedCategoryId && (
             <div className="category-section slide-up">
               <Row gutter={[16, 16]} className="links-grid">
-                {(groupedLinks[selectedCategoryId] || []).map((link, index) => (
-                  <Col key={link.id}
+                {(links.groupedLinks[cat.selectedCategoryId] || []).map((link, index) => (
+                  <Col
+                    key={link.id}
                     onDragOver={(event) => {
                       event.preventDefault();
-                      if (draggingLinkId && draggingLinkId !== link.id) {
-                        setDragOverLinkId(link.id);
+                      if (links.draggingLinkId && links.draggingLinkId !== link.id) {
+                        links.setDragOverLinkId(link.id);
                       }
                     }}
-                    onDragLeave={() => {
-                      setDragOverLinkId(null);
-                    }}
+                    onDragLeave={() => links.setDragOverLinkId(null)}
                     onDrop={(event) => {
                       event.preventDefault();
-                      setDragOverLinkId(null);
-                      if (!draggingLinkId) return;
-                      handleReorderLinksInCategory(
-                        draggingLinkId,
-                        link.id,
-                        selectedCategoryId
-                      );
-                      setDraggingLinkId(null);
+                      links.setDragOverLinkId(null);
+                      if (!links.draggingLinkId) return;
+                      links.reorderLinksInCategory(links.draggingLinkId, link.id, cat.selectedCategoryId);
+                      links.setDraggingLinkId(null);
                     }}
                   >
                     <LinkCard
-                      key={link.id}
-                      link={link}
-                      menuItems={getLinkMenuItems(link)}
-                      openInNewTab={openInNewTab}
+                      link={link} menuItems={getLinkMenuItems(link)}
+                      openInNewTab={settings.openInNewTab}
                       className={`fade-in delay-${(index % 3) + 1}`}
-                      draggable
-                      isDragging={draggingLinkId === link.id}
-                      isDragOver={dragOverLinkId === link.id}
-                      isJustDropped={justDroppedLinkId === link.id}
-                      onDragStart={() => setDraggingLinkId(link.id)}
-                      onDragEnd={() => {
-                        setDraggingLinkId(null);
-                        setDragOverLinkId(null);
+                      draggable isDragging={links.draggingLinkId === link.id}
+                      isDragOver={links.dragOverLinkId === link.id}
+                      isJustDropped={links.justDroppedLinkId === link.id}
+                      onDragStart={(e) => {
+                        e.dataTransfer.setData("text/plain", link.id);
+                        e.dataTransfer.effectAllowed = "move";
+                        links.setDraggingLinkId(link.id);
                       }}
+                      onDragEnd={() => { links.setDraggingLinkId(null); links.setDragOverLinkId(null); }}
                     />
                   </Col>
                 ))}
                 <Col>
-                  <div
-                    className="link-card add-link-card"
-                    onClick={() => setIsAddLinkModalVisible(true)}
-                  >
+                  <div className="link-card add-link-card" onClick={() => links.setIsAddLinkModalVisible(true)}>
                     <div className="link-content">
                       <div className="link-icon">
-                        <PlusOutlined
-                          style={{ fontSize: "24px", color: "#8c8c8c" }}
-                        />
+                        <PlusOutlined style={{ fontSize: "24px", color: "#8c8c8c" }} />
                       </div>
                       <div className="link-title">添加链接</div>
                     </div>
@@ -694,220 +368,243 @@ function App() {
           )}
         </div>
       </Content>
-      {dockedLinks.length > 0 && <DockBar openInNewTab={openInNewTab} links={dockedLinks} />}
+      {links.dockedLinks.length > 0 && (
+        <DockBar openInNewTab={settings.openInNewTab} links={links.dockedLinks} />
+      )}
 
-      {/* 添加分类 Modal */}
-      <Modal
-        title="添加分类"
-        open={isModalVisible}
-        onOk={() => form.submit()}
-        onCancel={() => {
-          form.resetFields();
-          setIsModalVisible(false);
-        }}
-      >
-        <CategoryForm form={form} onFinish={handleAddCategory} />
+      {/* ── 添加分类 ── */}
+      <Modal title="添加分类" open={cat.isModalVisible} onOk={() => form.submit()}
+        onCancel={() => { form.resetFields(); cat.setIsModalVisible(false); }}>
+        <CategoryForm form={form} onFinish={cat.addCategory} />
       </Modal>
 
-      {/* 编辑链接 Modal */}
-      <Modal
-        title="编辑链接"
-        open={isEditLinkModalVisible}
-        onOk={handleSaveLink}
-        onCancel={() => setIsEditLinkModalVisible(false)}
-      >
+      {/* ── 编辑链接（含备注 + 标签）── */}
+      <Modal title="编辑链接" open={links.isEditLinkModalVisible} onOk={links.saveEditedLink}
+        onCancel={() => links.setIsEditLinkModalVisible(false)}>
         <div className="edit-link-form">
-          <Input
-            placeholder="链接标题"
-            value={editLinkTitle}
-            onChange={(e) => setEditLinkTitle(e.target.value)}
-            style={{ marginBottom: 16 }}
-            maxLength={50}
-          />
-          <Input
-            placeholder="链接地址"
-            value={editLinkUrl}
-            onChange={(e) => setEditLinkUrl(e.target.value)}
-            style={{ marginBottom: 16 }}
-          />
-          <Select
-            style={{ width: "100%" }}
-            value={editLinkCategory}
-            onChange={setEditLinkCategory}
-            placeholder="选择分类"
-          >
-            {categories.map((category) => (
-              <Select.Option key={category.id} value={category.id}>
-                {category.name}
-              </Select.Option>
+          <Input placeholder="链接标题" value={links.editLinkTitle}
+            onChange={(e) => links.setEditLinkTitle(e.target.value)} style={{ marginBottom: 16 }} maxLength={50} />
+          <Input placeholder="链接地址" value={links.editLinkUrl}
+            onChange={(e) => links.setEditLinkUrl(e.target.value)} style={{ marginBottom: 16 }} />
+          <Select style={{ width: "100%" }} value={links.editLinkCategory}
+            onChange={(v) => links.setEditLinkCategory(v)} placeholder="选择分类">
+            {cat.categories.map((category) => (
+              <Select.Option key={category.id} value={category.id}>{category.name}</Select.Option>
             ))}
           </Select>
+          <Input.TextArea placeholder="备注（可选）" value={links.editLinkDescription}
+            onChange={(e) => links.setEditLinkDescription(e.target.value)}
+            style={{ marginTop: 16 }} rows={2} maxLength={200} showCount />
+          <div style={{ marginTop: 12 }}>
+            <div style={{ fontSize: 12, color: "#8c8c8c", marginBottom: 4 }}>标签（回车添加）</div>
+            <TagInput tags={links.editLinkTags} onChange={links.setEditLinkTags} />
+          </div>
         </div>
       </Modal>
 
-      {/* 设置 Modal */}
-      <Modal
-        title="设置"
-        open={isSettingsVisible}
-        onOk={handleSaveSettings}
-        onCancel={() => setIsSettingsVisible(false)}
-        cancelText="取消"
-        okText="保存"
-      >
+      {/* ── 设置 ── */}
+      <Modal title="设置" open={settings.isSettingsVisible}
+        onOk={settings.saveCurrentSettings} onCancel={() => settings.setIsSettingsVisible(false)}
+        cancelText="取消" okText="保存" width={560}>
         <div className="settings-section">
-          <h3>默认搜索引擎</h3>
-          <Radio.Group
-            value={selectedSearchEngine}
-            onChange={(e) => setSelectedSearchEngine(e.target.value)}
-          >
-            <Radio.Button value="google">Google</Radio.Button>
-            <Radio.Button value="baidu">百度</Radio.Button>
-            <Radio.Button value="bing">Bing</Radio.Button>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <h3 style={{ margin: 0 }}>默认搜索引擎</h3>
+            <Button size="small" type="link" onClick={() => setIsEngineModalOpen(true)}>
+              <PlusOutlined /> 管理引擎
+            </Button>
+          </div>
+          <Radio.Group value={settings.selectedSearchEngine}
+            onChange={(e) => settings.setSelectedSearchEngine(e.target.value)}
+            style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+            {allEngines.map((engine) => (
+              <Radio.Button key={engine.id} value={engine.id}>{engine.name}</Radio.Button>
+            ))}
           </Radio.Group>
         </div>
-
         <div className="settings-section">
           <h3>页面打开方式</h3>
-          <Switch
-            checked={openInNewTab}
-            onChange={setOpenInNewTab}
-            checkedChildren="新标签页打开"
-            unCheckedChildren="当前页打开"
-          />
+          <Switch checked={settings.openInNewTab} onChange={settings.setOpenInNewTab}
+            checkedChildren="新标签页打开" unCheckedChildren="当前页打开" />
         </div>
-
         <div className="settings-section">
           <h3>背景设置</h3>
           <div className="background-preview">
-            {backgroundImageUrl ? (
-              <div className="current-background">
-                <img src={backgroundImageUrl} alt="当前背景" />
-              </div>
+            {bg.backgroundImageUrl ? (
+              <div className="current-background"><img src={bg.backgroundImageUrl} alt="当前背景" /></div>
             ) : (
-              <div
-                className="current-background solid-background"
-                style={{ backgroundColor }}
-              />
+              <div className="current-background solid-background" style={{ backgroundColor: bg.backgroundColor }} />
             )}
             <div className="background-actions">
-              <Button
-                icon={<PictureOutlined />}
-                onClick={loadBingImages}
-                loading={loadingImages}
-              >
-                选择 Bing 图片
-              </Button>
-              <div className="color-presets">
-                {[
-                  "#f0f2f5", // 默认浅灰
-                  "#ffffff", // 纯白
-                  "#141414", // 深色
-                  "#e6f4ff", // 浅蓝
-                  "#f6ffed", // 浅绿
-                  "#fff7e6", // 浅橙
-                  "#fff1f0", // 浅红
-                  "#f9f0ff", // 浅紫
-                ].map((color) => (
-                  <div
-                    key={color}
-                    className={`color-preset ${
-                      backgroundColor === color ? "active" : ""
-                    }`}
-                    style={{ backgroundColor: color }}
-                    onClick={() => handleSelectColor(color)}
-                    title={color}
-                  />
-                ))}
-              </div>
+              <input ref={fileInputRef} type="file" accept="image/*" style={{ display: "none" }}
+                onChange={(e) => { const file = e.target.files?.[0]; if (file) bg.uploadBackground(file); e.target.value = ""; }} />
+              <Button icon={<PictureOutlined />} onClick={() => fileInputRef.current?.click()}>上传背景图</Button>
+              {bg.backgroundImageUrl && <Button onClick={bg.removeBackground}>恢复默认</Button>}
             </div>
-            <div className="bing-images">
-              {bingImages.map((image, index) => (
-                <div
-                  key={index}
-                  className="bing-image-item"
-                  onClick={() => handleSelectBingImage(image.url)}
-                >
-                  <img src={image.thumbnailUrl} alt={image.title} />
-                  <div className="image-info">
-                    <div className="image-title">{image.title}</div>
-                    <div className="image-copyright">{image.copyright}</div>
-                  </div>
-                </div>
+            <div className="color-presets">
+              {["#f0f2f5","#ffffff","#141414","#e6f4ff","#f6ffed","#fff7e6","#fff1f0","#f9f0ff"].map((color) => (
+                <div key={color} className={`color-preset ${bg.backgroundColor === color ? "active" : ""}`}
+                  style={{ backgroundColor: color }} onClick={() => bg.selectColor(color)} title={color} />
               ))}
             </div>
           </div>
         </div>
+        <div className="settings-section">
+          <h3>书签同步</h3>
+          <Space wrap>
+            <Button onClick={handleImportFromBookmarks} loading={isSyncingBookmarks}>
+              从 Chrome 书签导入
+            </Button>
+            <Button onClick={handleExportToBookmarks}>
+              导出到 Chrome 书签
+            </Button>
+          </Space>
+          <div className="settings-tip">导入书签栏中的文件夹会自动转为分类</div>
+        </div>
+
+        <div className="settings-section">
+          <h3>链接健康检测</h3>
+          <Space>
+            <Button onClick={handleCheckLinks} loading={isCheckingLinks}>
+              {isCheckingLinks ? `检测中 ${checkProgress.checked}/${checkProgress.total}` : "一键检测所有链接"}
+            </Button>
+          </Space>
+          <div className="settings-tip">检测链接可达性，每次间隔不少于 24 小时</div>
+        </div>
 
         <div className="settings-section">
           <h3>数据管理</h3>
-          <Space>
-            <Button onClick={handleExportData}>
-              导出数据
-            </Button>
-            <Upload
-              accept=".json"
-              showUploadList={false}
-              beforeUpload={(file) => {
-                handleImportData(file)
-                return false
-              }}
-            >
+          <Space wrap>
+            <Button onClick={settings.handleExportData}>导出数据</Button>
+            <Upload accept=".json" showUploadList={false} beforeUpload={(file) => {
+              Modal.confirm({
+                title: "选择导入模式",
+                content: (
+                  <div>
+                    <p>请选择导入方式：</p>
+                    <p style={{ fontSize: 12, color: "#8c8c8c" }}>
+                      <b>覆盖</b>：替换所有现有数据<br/>
+                      <b>追加</b>：仅新增不重复的数据<br/>
+                      <b>合并</b>：按链接去重，保留最新版本
+                    </p>
+                  </div>
+                ),
+                okText: "覆盖导入",
+                cancelText: "追加导入",
+                onOk: () => settings.importWithMode(file, "overwrite"),
+                onCancel: () => {
+                  Modal.confirm({
+                    title: "追加还是合并？",
+                    content: "追加：不修改已有数据 | 合并：按URL去重保留最新",
+                    okText: "追加导入",
+                    cancelText: "合并导入",
+                    onOk: () => settings.importWithMode(file, "append"),
+                    onCancel: () => settings.importWithMode(file, "merge"),
+                  });
+                },
+              });
+              return false;
+            }}>
               <Button>导入数据</Button>
             </Upload>
           </Space>
-          <div className="settings-tip">
-            导出的数据包含所有分类、链接和设置信息
-          </div>
+          <div className="settings-tip">导出的数据包含所有分类、链接和设置信息</div>
         </div>
       </Modal>
 
-      {/* 重命名分类 Modal */}
-      <Modal
-        title="编辑分类"
-        open={isRenameModalVisible}
+      {/* ── 编辑分类 ── */}
+      <Modal title="编辑分类" open={cat.isRenameModalVisible}
         onOk={() => editForm.submit()}
-        onCancel={() => {
-          editForm.resetFields();
-          setIsRenameModalVisible(false);
-          setRenamingCategory(null);
-        }}
-      >
-        <CategoryForm
-          form={editForm}
-          initialValues={renamingCategory}
-          onFinish={handleRenameCategory}
-        />
+        onCancel={() => { editForm.resetFields(); cat.setIsRenameModalVisible(false); }}>
+        <CategoryForm form={editForm} initialValues={cat.renamingCategory} onFinish={cat.renameCategory} />
       </Modal>
 
-      {/* 新增链接 Modal */}
-      <Modal
-        title="新增链接"
-        open={isAddLinkModalVisible}
-        onOk={handleAddLink}
-        cancelText="取消"
-        okText="保存"
-        onCancel={() => {
-          setIsAddLinkModalVisible(false);
-          setNewLinkTitle("");
-          setNewLinkUrl("");
-        }}
-      >
+      {/* ── 新增链接 ── */}
+      <Modal title="新增链接" onOk={() => links.addNewLink(cat.selectedCategoryId, getFavicon)}
+        open={links.isAddLinkModalVisible} cancelText="取消" okText="保存"
+        onCancel={() => { links.setIsAddLinkModalVisible(false); links.setNewLinkTitle(""); links.setNewLinkUrl(""); }}>
         <div className="edit-link-form">
-          <Input
-            placeholder="链接标题"
-            value={newLinkTitle}
-            onChange={(e) => setNewLinkTitle(e.target.value)}
-            style={{ marginBottom: 16 }}
-            maxLength={20}
-          />
-          <Input
-            placeholder="链接地址"
-            value={newLinkUrl}
-            onChange={(e) => setNewLinkUrl(e.target.value)}
-          />
+          <Input placeholder="链接标题" value={links.newLinkTitle}
+            onChange={(e) => links.setNewLinkTitle(e.target.value)} style={{ marginBottom: 16 }} maxLength={20} />
+          <Input placeholder="链接地址" value={links.newLinkUrl}
+            onChange={(e) => links.setNewLinkUrl(e.target.value)} />
+        </div>
+      </Modal>
+
+      {/* ── 背景图编辑器 ── */}
+      <BackgroundEditor open={bg.editorOpen} imageUrl={bg.editorImageUrl} opacity={bg.bgOpacity}
+        onSave={bg.editorSave} onCancel={bg.editorCancel} />
+
+      {/* ── 标签页会话管理 ── */}
+      <SessionManager open={sessions.isSessionManagerOpen} onClose={() => sessions.setIsSessionManagerOpen(false)} />
+
+      {/* ── 自定义搜索引擎管理 ── */}
+      <Modal title="管理搜索引擎" open={isEngineModalOpen}
+        onCancel={() => setIsEngineModalOpen(false)} footer={null} width={480}>
+        <div style={{ marginBottom: 16 }}>
+          <Space.Compact style={{ width: "100%" }}>
+            <Input placeholder="引擎名称" value={newEngineName}
+              onChange={(e) => setNewEngineName(e.target.value)} style={{ width: 120 }} />
+            <Input placeholder="搜索 URL（含 {keyword}）" value={newEngineUrl}
+              onChange={(e) => setNewEngineUrl(e.target.value)} style={{ flex: 1 }} />
+            <Button type="primary" onClick={handleAddEngine}>添加</Button>
+          </Space.Compact>
+          <div style={{ fontSize: 12, color: "#8c8c8c", marginTop: 4 }}>
+            示例: https://github.com/search?q={"{keyword}"}
+          </div>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 300, overflowY: "auto" }}>
+          {builtinSearchEngines.map((e) => (
+            <div key={e.id} className="engine-item" style={{
+              display: "flex", justifyContent: "space-between", alignItems: "center",
+              padding: "6px 10px", borderRadius: 6, border: "1px solid rgba(0,0,0,0.06)",
+            }}>
+              <span><Tag color="blue" style={{ margin: 0 }}>{e.name}</Tag></span>
+              <span style={{ fontSize: 11, color: "#8c8c8c" }}>内置</span>
+            </div>
+          ))}
+          {settings.customEngines.map((e) => (
+            <div key={e.id} className="engine-item" style={{
+              display: "flex", justifyContent: "space-between", alignItems: "center",
+              padding: "6px 10px", borderRadius: 6, border: "1px solid rgba(0,0,0,0.06)",
+            }}>
+              <span><Tag style={{ margin: 0 }}>{e.name}</Tag></span>
+              <Popconfirm title="确认删除？" onConfirm={() => settings.removeEngine(e.id)}>
+                <Button size="small" type="text" danger icon={<DeleteOutlined />} />
+              </Popconfirm>
+            </div>
+          ))}
         </div>
       </Modal>
     </div>
+  );
+}
+
+// ── 标签输入组件 ──────────────────────────────────────
+function TagInput({ tags, onChange }: { tags: string[]; onChange: (tags: string[]) => void }) {
+  const [inputValue, setInputValue] = useState("");
+  const handleClose = (removedTag: string) => onChange(tags.filter(t => t !== removedTag));
+  const handleInputConfirm = () => {
+    const val = inputValue.trim();
+    if (val && !tags.includes(val)) onChange([...tags, val]);
+    setInputValue("");
+  };
+  return (
+    <div className="tag-input-wrapper">
+      {tags.map(tag => (
+        <Tag key={tag} closable onClose={() => handleClose(tag)} color="blue">{tag}</Tag>
+      ))}
+      <Input size="small" style={{ width: 100 }} value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
+        onBlur={handleInputConfirm} onPressEnter={handleInputConfirm} placeholder="标签" />
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <ErrorBoundary>
+      <AppInner />
+    </ErrorBoundary>
   );
 }
 
