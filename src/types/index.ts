@@ -4,6 +4,7 @@ export interface Category {
   icon: string
   isHome?: boolean
   color?: string
+  order?: number
 }
 
 export interface SavedLink {
@@ -15,12 +16,28 @@ export interface SavedLink {
   isDocked: boolean
   icon?: string
   order?: number
+  description?: string
+  tags?: string[]
 }
 
 export interface SearchEngine {
   id: string
   name: string
   searchUrl: string
+  icon?: string
+  isBuiltin?: boolean
+}
+
+export interface TabSession {
+  id: string
+  name: string
+  tabs: Array<{
+    title: string
+    url: string
+    favIconUrl?: string
+  }>
+  createdAt: number
+  updatedAt: number
 }
 
 export interface ITabItem {
@@ -39,4 +56,4 @@ export interface ITabItem {
 
 export interface ITabData {
   navConfig: ITabItem[]
-} 
+}

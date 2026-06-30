@@ -1,6 +1,5 @@
 import React from 'react'
 import { Select, Tooltip } from 'antd'
-import * as Icons from '@ant-design/icons'
 import { iconList } from '../../utils/iconUtils'
 import './index.css'
 
