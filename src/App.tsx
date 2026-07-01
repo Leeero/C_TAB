@@ -5,7 +5,7 @@
  */
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
-  Layout, Modal, message, Input, Radio, Row, Col, Select,
+  Layout, Modal, Drawer, message, Input, Radio, Row, Col, Select,
   Button, Form, Space, Upload, Switch, Tag, Popconfirm,
 } from "antd";
 import {
@@ -403,9 +403,11 @@ function AppInner() {
       </Modal>
 
       {/* ── 设置 ── */}
-      <Modal title="设置" open={settings.isSettingsVisible}
-        onOk={settings.saveCurrentSettings} onCancel={() => settings.setIsSettingsVisible(false)}
-        cancelText="取消" okText="保存" width={560}>
+      <Drawer title="设置" placement="right" width={420} className="settings-drawer"
+        open={settings.isSettingsVisible}
+        onClose={() => settings.setIsSettingsVisible(false)}
+        extra={<Button type="primary" onClick={settings.saveCurrentSettings}>保存</Button>}
+        styles={{ body: { overflowY: "auto" } }}>
         <div className="settings-section">
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
             <h3 style={{ margin: 0 }}>默认搜索引擎</h3>
@@ -509,7 +511,7 @@ function AppInner() {
           </Space>
           <div className="settings-tip">导出的数据包含所有分类、链接和设置信息</div>
         </div>
-      </Modal>
+      </Drawer>
 
       {/* ── 编辑分类 ── */}
       <Modal title="编辑分类" open={cat.isRenameModalVisible}

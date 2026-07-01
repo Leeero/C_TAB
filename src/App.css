@@ -296,6 +296,22 @@
   }
 }
 
+
+/* 设置抽屉样式 */
+.settings-drawer .ant-drawer-body {
+  padding: 16px 24px;
+}
+
+.settings-drawer .ant-drawer-extra {
+  margin-left: 16px;
+}
+
+@media (max-width: 480px) {
+  .settings-drawer .ant-drawer-content-wrapper {
+    width: 100% !important;
+  }
+}
+
 /* ── 标签输入组件 ────────────────────────────────── */
 .tag-input-wrapper {
   display: flex;
