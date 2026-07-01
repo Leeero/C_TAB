@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React from 'react'
+import React, { useState } from 'react'
 import { Dropdown } from 'antd'
 import { LinkOutlined } from '@ant-design/icons'
 import { SavedLink } from '../../types'
@@ -34,6 +34,17 @@ const LinkCard: React.FC<LinkCardProps> = ({
   onDrop,
   onDragEnd,
 }) => {
+  const [imgError, setImgError] = useState(false)
+
+  const getLetter = () => {
+    try {
+      const hostname = new URL(link.url).hostname
+      return hostname.replace(/^www\./, '').charAt(0).toUpperCase()
+    } catch {
+      return link.title.charAt(0).toUpperCase() || '?'
+    }
+  }
+
   const dragClasses = [
     isDragging ? 'dragging' : '',
     isDragOver ? 'drag-over' : '',
@@ -57,10 +68,10 @@ const LinkCard: React.FC<LinkCardProps> = ({
           rel={openInNewTab ? "noopener noreferrer" : ""}
         >
           <div className="link-icon">
-            {link.icon ? (
-              <img src={link.icon} alt="" className="favicon" />
+            {link.icon && !imgError ? (
+              <img src={link.icon} alt="" className="favicon" onError={() => setImgError(true)} />
             ) : (
-              <LinkOutlined style={{ fontSize: '24px', color: '#8c8c8c' }} />
+              <span className="favicon-letter">{getLetter()}</span>
             )}
           </div>
           <div className="link-title">{link.title}</div>

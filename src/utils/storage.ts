@@ -2,7 +2,7 @@
 import { Category, SavedLink } from '../types'
 
 // ── 常量 ─────────────────────────────────────────────
-const LINKS_PER_CHUNK = 20
+const CHUNK_SIZE_LIMIT = 7000  // chrome.storage.sync 每项上限 8192，留 1KB 余量
 const BACKUP_KEY = 'links_backup'
 
 // ── 压缩 / 解压 ──────────────────────────────────────
@@ -32,13 +32,23 @@ const decompressLink = (link: Partial<SavedLink>): SavedLink => ({
   tags: link.tags,
 })
 
-// ── 分块工具 ─────────────────────────────────────────
+// ── 分块工具（按大小自动分块，防止单个 chunk 超限）───
 const chunkLinks = (links: SavedLink[]): Array<Partial<SavedLink>[]> => {
   const compressed = links.map(compressLink)
   const chunks: Array<Partial<SavedLink>[]> = []
-  for (let i = 0; i < compressed.length; i += LINKS_PER_CHUNK) {
-    chunks.push(compressed.slice(i, i + LINKS_PER_CHUNK))
+  let current: Partial<SavedLink>[] = []
+
+  for (const link of compressed) {
+    current.push(link)
+    // 检查当前 chunk 的序列化大小
+    if (JSON.stringify(current).length > CHUNK_SIZE_LIMIT) {
+      // 弹出最后一条，单独处理
+      current.pop()
+      if (current.length > 0) chunks.push(current)
+      current = [link]
+    }
   }
+  if (current.length > 0) chunks.push(current)
   return chunks
 }
 

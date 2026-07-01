@@ -369,7 +369,7 @@ function AppInner() {
         </div>
       </Content>
       {links.dockedLinks.length > 0 && (
-        <DockBar openInNewTab={settings.openInNewTab} links={links.dockedLinks} />
+        <DockBar openInNewTab={settings.openInNewTab} links={links.dockedLinks} getMenuItems={getLinkMenuItems} />
       )}
 
       {/* ── 添加分类 ── */}
